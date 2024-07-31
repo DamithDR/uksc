@@ -6,7 +6,7 @@ import torch
 
 
 def run(args):
-    df = pd.read_csv('data/UKSC_dataset.tsv', sep='\t')
+    df = pd.read_excel('data/UKSC_dataset.xlsx', sheet_name='data')
 
     output_list = []
     pipe = pipeline(
