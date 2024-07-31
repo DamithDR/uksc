@@ -9,21 +9,19 @@ def run(args):
     df = pd.read_csv('data/UKSC_dataset.tsv', sep='\t')
 
     output_list = []
+    pipe = pipeline(
+        "text-generation",
+        model=args.model,
+        model_kwargs={"torch_dtype": torch.bfloat16},
+        device_map="auto",
+
+    )
     for background, decision, reason in zip(df['background'], df['decision'], df['reasoning']):
         messages = [
             {"role": "system",
              "content": "Assume you are a judge in supreme court in United Kingdom, your duty is to understand the following case background and output the likely outcome and the reasoning behind it."},
             {"role": "user", "content": background},
         ]
-
-        pipe = pipeline(
-            "text-generation",
-            model=args.model,
-            model_kwargs={"torch_dtype": torch.bfloat16},
-            device_map="auto",
-
-        )
-
         outputs = pipe(
             messages,
             max_new_tokens=2048,
