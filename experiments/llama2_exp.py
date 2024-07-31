@@ -11,7 +11,7 @@ def run(args):
     output_list = []
     pipe = pipeline(
         "text-generation",
-        model=args.model,
+        model=args.model_name,
         model_kwargs={"torch_dtype": torch.bfloat16},
         device_map="auto",
 
