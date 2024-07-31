@@ -17,7 +17,7 @@ def run(args):
         device_map="auto",
 
     )
-    for background, decision, reason in tqdm(zip(df['background'], df['decision'], df['reasoning'])):
+    for background, decision, reason in zip(df['background'], df['decision'], df['reasoning']):
         messages = [
             {"role": "system",
              "content": "Assume you are a judge in supreme court in United Kingdom, your duty is to understand the following case background and output the likely outcome and the reasoning behind it."},
@@ -29,7 +29,7 @@ def run(args):
             pad_token_id=pipe.model.config.eos_token_id,
         )
         output_list.append(outputs[0]["generated_text"][-1])
-        tqdm.update(1)
+        print(outputs[0]["generated_text"][-1])
     df['outputs'] = output_list
     model_name = str(args.model_name).replace('/', '_')
     df.to_csv(f'outputs/output_{model_name}.tsv', sep='\t', index=False)
