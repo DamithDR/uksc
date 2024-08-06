@@ -16,4 +16,10 @@ module add cuda/12.0
 source activate /storage/hpc/41/dolamull/conda_envs/llm_env
 export HF_HOME=/scratch/hpc/41/dolamull/hf_cache
 
+# Load the environment variables from the .env file
+source <(grep -v '^#' .env | xargs -d '\n')
+
+# Login to Hugging Face using the token
+echo $HUGGINGFACE_TOKEN | huggingface-cli login --token
+
 python -m experiments.llama2_exp --model_name meta-llama/Meta-Llama-3-8B-Instruct
