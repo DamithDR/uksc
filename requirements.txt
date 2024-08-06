@@ -2,3 +2,4 @@ transformers
 pandas
 openpyxl
 accelerate
+openai

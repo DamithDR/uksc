@@ -1,9 +1,8 @@
 import argparse
-import pandas as pd
-from tqdm import tqdm
 
-from transformers import AutoTokenizer, pipeline
+import pandas as pd
 import torch
+from transformers import pipeline
 
 
 def run(args):

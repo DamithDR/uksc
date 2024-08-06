@@ -16,4 +16,4 @@ module add cuda/12.0
 source activate /storage/hpc/41/dolamull/conda_envs/llm_env
 export HF_HOME=/scratch/hpc/41/dolamull/hf_cache
 
-python python -m experiments.llama2_exp --model_name meta-llama/Meta-Llama-3-8B-Instruct
+python -m experiments.llama2_exp --model_name meta-llama/Meta-Llama-3-8B-Instruct
