@@ -20,6 +20,6 @@ export HF_HOME=/scratch/hpc/41/dolamull/hf_cache
 source <(grep -v '^#' .env | xargs -d '\n')
 
 # Login to Hugging Face using the token
-echo $HUGGINGFACE_TOKEN | huggingface-cli login --token
+huggingface-cli login --token $HUGGINGFACE_TOKEN
 
 python -m experiments.llama2_exp --model_name meta-llama/Meta-Llama-3-8B-Instruct
