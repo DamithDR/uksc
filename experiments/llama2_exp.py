@@ -37,7 +37,7 @@ def run(args):
             temperature=0.1,
             pad_token_id=pipe.model.config.eos_token_id,
         )
-        resp = outputs[0]["generated_text"][-1]
+        resp = outputs[0]["generated_text"][-1]['content'].strip()
         split = resp.split('###')
         decisions.append(split[0].strip().lower())
         reasons.append(split[1].strip())
