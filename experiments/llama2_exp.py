@@ -38,6 +38,7 @@ def run(args):
             pad_token_id=pipe.model.config.eos_token_id,
         )
         resp = outputs[0]["generated_text"][-1]['content'].strip()
+        print(f'Response : {resp}\n======================================================')
         split = resp.split('###')
         decisions.append(split[0].strip().lower())
         reasons.append(split[1].strip())
