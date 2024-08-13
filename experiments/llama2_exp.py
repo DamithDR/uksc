@@ -23,9 +23,9 @@ def run(args):
         messages = [
             {"role": "system",
              "content": "Assume you are a judge in supreme court in United Kingdom, "
-                        "your duty is to understand the following case background and output the "
-                        "outcome and the reasoning behind it."
-                        "In your response, first show if the appeal is Approved or Dismissed. Then provide the legal reasoning behind your judgement"
+                        "your duty is to understand the following case background and output your "
+                        "decision and the reasoning behind it."
+                        "In your response, first show if the appeal is allowed or Dismissed. Then provide the legal reasoning behind your judgement"
                         "Please provide your answer in the following format: "
                         "{allow/dismiss}###{Reason}"
              },
