@@ -2,6 +2,7 @@ import argparse
 
 import pandas as pd
 import torch
+from tqdm import tqdm
 from transformers import pipeline, AutoConfig
 
 from util.eval import eval_decisions
@@ -19,10 +20,9 @@ def run(args):
         device_map="auto",
 
     )
-    pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
-    pipe.tokenizer.padding_side='left'
-    conversations = []
-    for background, decision, reason in zip(df['background'], df['decision'], df['reasoning']):
+    # pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
+    # pipe.tokenizer.padding_side = 'left'
+    for background, decision, reason in tqdm(zip(df['background'], df['decision'], df['reasoning']), total=len(df)):
         messages = [
             {"role": "system",
              "content": "Assume you are a judge at the supreme court in United Kingdom. "
@@ -33,19 +33,16 @@ def run(args):
              },
             {"role": "user", "content": background},
         ]
-        conversations.append(messages)
-    outputs = pipe(
-        conversations,
-        batch_size=8,
-        max_new_tokens=2048,
-        temperature=0.9,
-        top_k=20,
-        top_p=0.8,
-        pad_token_id=pipe.model.config.eos_token_id,
-        num_return_sequences=1,
-    )
-    for output in outputs:
-        resp = output[0]["generated_text"][-1]['content'].strip()
+        outputs = pipe(
+            messages,
+            max_new_tokens=2048,
+            temperature=0.9,
+            top_k=20,
+            top_p=0.8,
+            pad_token_id=pipe.model.config.eos_token_id,
+            num_return_sequences=1,
+        )
+        resp = outputs[0]["generated_text"][-1]['content'].strip()
         split = resp.split('###')
         decisions.append(split[0].strip().lower())
         reasons.append(split[1].strip())
@@ -77,5 +74,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='''judgement prediction in UKSC cases''')
     parser.add_argument('--model_name', required=True, help='model_name')
+    # parser.add_argument('--batch_size', type=int, required=False, default=8, help='batch_size')
     args = parser.parse_args()
     run(args)
