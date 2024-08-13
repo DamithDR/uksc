@@ -19,25 +19,31 @@ def run(args):
         device_map="auto",
 
     )
+    conversations = []
     for background, decision, reason in zip(df['background'], df['decision'], df['reasoning']):
         messages = [
             {"role": "system",
              "content": "Assume you are a judge at the supreme court in United Kingdom. "
                         "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision and the reasoning behind it."
-                        "In your response, first classify whether the case is allowed or dismissed, select one from following : [allowed,dismissed]"
+                        "First classify whether the case is allowed or dismissed, select one from following : [allowed,dismissed]"
                         "Output the case classification label followed by the delimiter '###'. After the delimiter, provide a legal explanation for your classification decision."
                         "Example output: [Your classification label]###[Your explanation]"
              },
             {"role": "user", "content": background},
         ]
-        outputs = pipe(
-            messages,
-            max_new_tokens=2048,
-            temperature=0.9,
-            pad_token_id=pipe.model.config.eos_token_id,
-        )
-        resp = outputs[0]["generated_text"][-1]['content'].strip()
-        print(f'Response : {resp}\n======================================================')
+        conversations.append(messages)
+    outputs = pipe(
+        conversations,
+        batch_size=8,
+        max_new_tokens=2048,
+        temperature=0.9,
+        top_k=20,
+        top_p=0.8,
+        pad_token_id=pipe.model.config.eos_token_id,
+        num_return_sequences=1,
+    )
+    for output in outputs:
+        resp = output[0]["generated_text"][-1]['content'].strip()
         split = resp.split('###')
         decisions.append(split[0].strip().lower())
         reasons.append(split[1].strip())
