@@ -20,6 +20,7 @@ def run(args):
 
     )
     pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
+    pipe.tokenizer.padding_side='left'
     conversations = []
     for background, decision, reason in zip(df['background'], df['decision'], df['reasoning']):
         messages = [
