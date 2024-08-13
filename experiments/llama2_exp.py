@@ -2,7 +2,7 @@ import argparse
 
 import pandas as pd
 import torch
-from transformers import pipeline
+from transformers import pipeline, AutoConfig
 
 from util.eval import eval_decisions
 
@@ -19,6 +19,7 @@ def run(args):
         device_map="auto",
 
     )
+    pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
     conversations = []
     for background, decision, reason in zip(df['background'], df['decision'], df['reasoning']):
         messages = [
