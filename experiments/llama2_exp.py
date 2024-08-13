@@ -33,7 +33,7 @@ def run(args):
         outputs = pipe(
             messages,
             max_new_tokens=2048,
-            temperature=0.1,
+            temperature=0.9,
             pad_token_id=pipe.model.config.eos_token_id,
         )
         resp = outputs[0]["generated_text"][-1]['content'].strip()
