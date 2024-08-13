@@ -22,12 +22,11 @@ def run(args):
     for background, decision, reason in zip(df['background'], df['decision'], df['reasoning']):
         messages = [
             {"role": "system",
-             "content": "Assume you are a judge in supreme court in United Kingdom, "
-                        "your duty is to understand the following case background and output your "
-                        "decision and the reasoning behind it."
-                        "In your response, first show if the appeal is allowed or Dismissed. Then provide the legal reasoning behind your judgement"
-                        "Please provide your answer in the following format: "
-                        "{allow/dismiss}###{Reason}"
+             "content": "Assume you are a judge at the supreme court in United Kingdom. "
+                        "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision and the reasoning behind it."
+                        "In your response, first classify whether the case is allowed or dismissed, select one from following : [allowed,dismissed]"
+                        "Output the case classification label followed by the delimiter '###'. After the delimiter, provide a legal explanation for your classification decision."
+                        "Example output: [Your classification label]###[Your explanation]"
              },
             {"role": "user", "content": background},
         ]
