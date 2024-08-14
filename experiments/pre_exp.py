@@ -31,7 +31,7 @@ def run(args):
         ]
         outputs = pipe(
             messages,
-            max_new_tokens=10,
+            max_new_tokens=50,
             temperature=0.9,
             top_k=20,
             top_p=0.8,
