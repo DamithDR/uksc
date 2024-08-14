@@ -25,6 +25,7 @@ def run(args):
             {"role": "system",
              "content": "You will be given titles of possible court cases happened in UK supreme court. Your task is to check if you have seen the provided case before in your training data and choose either yes or no."
                         "Do not give any other explanation, just say yes or no depending on whether you have seen the particular case before."
+                        "Then if the case has been seen before, provide a summary of the case"
              },
             {"role": "user", "content": title},
         ]
@@ -50,7 +51,7 @@ def run(args):
     responses_df['title'] = df['title']
     responses_df['predictions'] = responses
 
-    responses_df.to_excel(f'outputs/{model_name}_decisions.xlsx', sheet_name=model_name, index=False)
+    responses_df.to_excel(f'outputs/pre_exp_results.xlsx', sheet_name=model_name, index=False)
 
 
 if __name__ == '__main__':
