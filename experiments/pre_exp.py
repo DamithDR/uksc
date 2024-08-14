@@ -20,7 +20,7 @@ def run(args):
     )
     # pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
     # pipe.tokenizer.padding_side = 'left'
-    for title in tqdm(zip(df['title']), total=len(df)):
+    for title in tqdm(df['title'].tolist(), total=len(df)):
         messages = [
             {"role": "system",
              "content": "You will be given titles of possible court cases happened in UK supreme court. Your task is to check if you have seen the provided case before in your training data and choose either yes or no."
