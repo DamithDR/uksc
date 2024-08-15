@@ -17,6 +17,8 @@ def run(args):
         chat_template = open('templates/mistral-instruct.jinja').read()
     elif str(args.model_name).__contains__('falcon'):
         chat_template = open('templates/falcon-instruct.jinja').read()
+    elif str(args.model_name).__contains__('Llama-2'):
+        chat_template = open('templates/llama-2-chat.jinja').read()
     if chat_template:
         tokenizer_mt.chat_template = chat_template
     decisions = []
