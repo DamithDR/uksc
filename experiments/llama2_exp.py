@@ -41,7 +41,7 @@ def run(args):
                         "Output the case classification label followed by the delimiter '###'. After the delimiter, provide a legal explanation for your classification decision."
                         "Example output: [Your classification label]###[Your explanation]"
              },
-            {"role": "user", "content": f"Following is the case background, please provide the classification label and the reasoning. case background: {background}"},
+            {"role": "user", "content": f"Following is the case background, please provide the classification label and the reasoning. case: {background}"},
         ]
         outputs = pipe(
             messages,
