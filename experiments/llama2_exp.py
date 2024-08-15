@@ -21,6 +21,7 @@ def run(args):
         chat_template = open('templates/llama-2-chat.jinja').read()
     if chat_template:
         tokenizer_mt.chat_template = chat_template
+    print(f'loaded chat template :{chat_template}')
     decisions = []
     reasons = []
     pipe = pipeline(
@@ -41,7 +42,7 @@ def run(args):
                         "Output the case classification label followed by the delimiter '###'. After the delimiter, provide a legal explanation for your classification decision."
                         "Example output: [Your classification label]###[Your explanation]"
              },
-            {"role": "user", "content": f"Following is the case background, please provide the classification label and the reasoning. case: {background}"},
+            {"role": "user", "content": f"Following is the case background, please provide the classification label and the reasoning. case background: {background}"},
         ]
         outputs = pipe(
             messages,
