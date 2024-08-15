@@ -39,7 +39,7 @@ def run(args):
                         "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision and the reasoning behind it."
                         "First classify whether the case is allowed or dismissed, select one from following : [allowed,dismissed]"
                         "Output the case classification label followed by the delimiter '###'. After the delimiter, provide a legal explanation for your classification decision."
-                        "Example output: {Your classification label###Your explanation}"
+                        "Example output: [Your classification label]###[Your explanation]"
              },
             {"role": "user", "content": f"Following is the case background, please provide the classification label and the reasoning. case background: {background}"},
         ]
