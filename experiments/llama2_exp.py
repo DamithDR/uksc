@@ -3,7 +3,7 @@ import argparse
 import pandas as pd
 import torch
 from tqdm import tqdm
-from transformers import pipeline, AutoConfig
+from transformers import pipeline, AutoConfig, AutoTokenizer
 
 from util.eval import eval_decisions
 
@@ -11,6 +11,14 @@ from util.eval import eval_decisions
 def run(args):
     df = pd.read_excel('data/UKSC_dataset.xlsx', sheet_name='data')
 
+    tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name)
+    chat_template = None
+    if str(args.model_name).__contains__('mistral'):
+        chat_template = open('templates/mistral-instruct.jinja').read()
+    elif str(args.model_name).__contains__('falcon'):
+        chat_template = open('templates/falcon-instruct.jinja').read()
+    if chat_template:
+        tokenizer_mt.chat_template = chat_template
     decisions = []
     reasons = []
     pipe = pipeline(
@@ -18,7 +26,7 @@ def run(args):
         model=args.model_name,
         model_kwargs={"torch_dtype": torch.bfloat16},
         device_map="auto",
-
+        tokenizer=tokenizer_mt
     )
     # pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
     # pipe.tokenizer.padding_side = 'left'
