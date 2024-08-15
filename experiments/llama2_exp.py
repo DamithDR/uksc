@@ -21,7 +21,6 @@ def run(args):
         chat_template = open('templates/llama-2-chat.jinja').read()
     if chat_template:
         tokenizer_mt.chat_template = chat_template
-    print(f'loaded chat template :{chat_template}')
     decisions = []
     reasons = []
     pipe = pipeline(
@@ -38,7 +37,7 @@ def run(args):
             {"role": "system",
              "content": "Assume you are a judge at the supreme court in United Kingdom. "
                         "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision and the reasoning behind it."
-                        "First classify whether the case is allowed or dismissed, select one from following : [allowed,dismissed]"
+                        "First classify whether the case is allowed or dismissed, select one from following : allowed,dismissed"
                         "Output the case classification label followed by the delimiter '###'. After the delimiter, provide a legal explanation for your classification decision."
                         "Example output: [Your classification label]###[Your explanation]"
              },
