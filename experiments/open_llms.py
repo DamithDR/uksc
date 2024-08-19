@@ -64,7 +64,7 @@ def run(args):
     os.environ["CUDA_VISIBLE_DEVICES"] = args.visible_cuda_devices  # set the devices you need to run
     df = pd.read_excel('data/UKSC_dataset.xlsx', sheet_name='data')
 
-    df = df[:40]
+    df = df[:20]
 
     tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name)
     chat_template = get_chat_template()
