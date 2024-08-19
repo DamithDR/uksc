@@ -89,7 +89,7 @@ def run(args):
                       #     'Phi-3') else None
                       },
         device_map="auto",
-        tokenizer=tokenizer_mt,
+        tokenizer=tokenizer_mt if str(args.model_name) not in ['meta-llama/Meta-Llama-3.1-8B-Instruct'] else None,
         trust_remote_code=True
     )
     pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
