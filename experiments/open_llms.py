@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 
 import pandas as pd
 import torch
@@ -12,6 +13,8 @@ from util.eval import eval_decisions
 def run(args):
     os.environ["CUDA_VISIBLE_DEVICES"] = args.visible_cuda_devices  # set the devices you need to run
     df = pd.read_excel('data/UKSC_dataset.xlsx', sheet_name='data')
+
+    df = df[:8]
 
     tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name)
     chat_template = None
@@ -32,33 +35,37 @@ def run(args):
         device_map="auto",
         tokenizer=tokenizer_mt
     )
-    # pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
-    # pipe.tokenizer.padding_side = 'left'
+    pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
+    pipe.tokenizer.padding_side = 'left'
+
+    all_messages = []
     for background, decision, reason in tqdm(zip(df['background'], df['decision'], df['reasoning']), total=len(df)):
         messages = [
             {"role": "system",
              "content": "Assume you are a judge at the supreme court in United Kingdom. "
                         "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision and the reasoning behind it."
-                        "First classify whether the case is allowed or dismissed, select one from following : [allowed,dismissed]"
-                        "Output the case classification label followed by the delimiter '###'. After the delimiter, provide a legal explanation for your classification decision."
-                        "Example output: [Your classification label]###[Your explanation]"
+                        "First, classify whether the case is allowed or dismissed, select one from following : [allowed,dismissed]"
              },
             {"role": "user",
-             "content": f"Following is the case background, please provide the classification label and the reasoning. case: {background}"},
+             "content": f"Following is the case background, please provide the classification label, do not provide any reason at this stage. case: {background}"},
         ]
-        outputs = pipe(
-            messages,
-            max_new_tokens=2048,
-            temperature=0.1,
-            pad_token_id=pipe.model.config.eos_token_id,
-            num_return_sequences=1,
-        )
-        resp = outputs[0]["generated_text"][-1]['content'].strip()
-        split = resp.split('###')
-        decisions.append(split[0].strip().lower())
-        reasons.append(split[1].strip())
+        all_messages.append(messages)
+
+    outputs = pipe(
+        all_messages,
+        max_new_tokens=2048,
+        temperature=0.1,
+        pad_token_id=pipe.model.config.eos_token_id,
+        num_return_sequences=1,
+        batch_size=8
+    )
+    print(outputs)
+    for output in outputs:
+        resp = output["generated_text"][-1]['content'].strip()
+        decisions.append(resp)
         print(resp)
 
+    sys.exit(0)
     # df['outputs'] = output_list
     model_name = str(args.model_name).replace('/', '_')
     # df.to_csv(f'outputs/output_{model_name}.tsv', sep='\t', index=False)
