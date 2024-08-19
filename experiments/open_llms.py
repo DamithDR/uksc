@@ -16,11 +16,11 @@ def get_messages_for_labels(df):
         messages = [
             {"role": "system",
              "content": "Assume you are a judge at the supreme court in United Kingdom. "
-                        "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision and the reasoning behind it."
-                        "First, classify whether the case is allowed or dismissed, select one from following : [allow,dismiss]"
+                        "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision label."
+                        "Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]."
              },
             {"role": "user",
-             "content": f"Following is the case background, please provide the classification label, do not respond anything else other than allow/dismiss. case: {background}"},
+             "content": f"Following is the case background, please select allow/dismiss, do not respond anything else other than allow/dismiss. appeal: {background}"},
         ]
         label_classification_messages.append(messages)
     return label_classification_messages
@@ -34,14 +34,14 @@ def get_messages_for_reasoning(df, decision_labels):
         messages = [
             {"role": "system",
              "content": "Assume you are a judge at the supreme court in United Kingdom. "
-                        "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision and the reasoning behind it."
-                        "First, classify whether the case is allowed or dismissed, select one from following : [allow,dismiss]"
+                        "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision label."
+                        "Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]."
              },
             {"role": "user",
-             "content": f"Following is the case background, please provide the classification label, do not respond anything else other than allow/dismiss. case: {background}"},
+             "content": f"Following is the case background, please select allow/dismiss, do not respond anything else other than allow/dismiss. appeal: {background}"},
             {"role": "assistant", "content": label},
             {"role": "user",
-             "content": "Now please provide the reason behind your decision. Carefully consider the case background and your decided label and output the reasoning behind your decision."}
+             "content": "Now please generate the reason behind your decision. Carefully consider the case background and your decided label and output the reasoning behind your decision."}
         ]
         reasoning_messages.append(messages)
     return reasoning_messages
@@ -112,7 +112,7 @@ def run(args):
         temperature=0.1,
         pad_token_id=pipe.model.config.eos_token_id,
         num_return_sequences=1,
-        batch_size=args.batch_size
+        batch_size=args.batch_size / 2
     )
 
     reasons = []
