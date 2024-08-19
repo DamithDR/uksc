@@ -21,7 +21,7 @@ def get_messages_for_labels(df):
                         "Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]"
              },
             {"role": "user",
-             "content": f"The case title is {title}. Please understand the appellant and respondents using the title. Following is the case background, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss."
+             "content": f"The case title is {title}. Please recognise the appellant and respondents seperately using the given title as they have indicated within brackets. Following is the case background, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss. "
                         f"Appeal: {background}"},
         ]
         label_classification_messages.append(messages)
@@ -40,7 +40,7 @@ def get_messages_for_reasoning(df, decision_labels):
                         "Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]"
              },
             {"role": "user",
-             "content": f"The case title is {title}. Please understand the appellant and respondents using the title. Following is the case background, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss. "
+             "content": f"The case title is {title}. Please recognise the appellant and respondent seperately using the given title as they have indicated within brackets. Following is the case background, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss. "
                         f"Appeal: {background}"},
             {"role": "assistant", "content": label},
             {"role": "user",
@@ -51,6 +51,7 @@ def get_messages_for_reasoning(df, decision_labels):
 
 
 def get_chat_template():
+    # https://github.com/chujiezheng/chat_templates/tree/main/chat_templates
     chat_template = None
     if str(args.model_name).__contains__('mistral'):
         chat_template = open('templates/mistral-instruct.jinja').read()
@@ -58,6 +59,10 @@ def get_chat_template():
         chat_template = open('templates/falcon-instruct.jinja').read()
     elif str(args.model_name).__contains__('Llama-2'):
         chat_template = open('templates/llama-2-chat.jinja').read()
+    elif str(args.model_name).__contains__('Meta-Llama-3'):
+        chat_template = open('templates/llama-3-instruct.jinja').read()
+    elif str(args.model_name).__contains__('Phi-3'):
+        chat_template = open('templates/phi-3.jinja').read()
     return chat_template
 
 
