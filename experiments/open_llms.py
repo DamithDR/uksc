@@ -133,7 +133,7 @@ def run(args):
     reasons_df['predictions'] = reasons
 
     if not os.path.exists("outputs/reasons.xlsx"):
-        decisions_df.to_excel("outputs/reasons.xlsx", sheet_name=f"{model_name}", index=False)
+        reasons_df.to_excel("outputs/reasons.xlsx", sheet_name=f"{model_name}", index=False)
     else:
         with pd.ExcelWriter('outputs/reasons.xlsx', mode='a', engine='openpyxl') as writer:
             reasons_df.to_excel(writer, sheet_name=f"{model_name}", index=False)
