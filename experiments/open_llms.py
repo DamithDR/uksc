@@ -124,7 +124,7 @@ def run(args):
     reasons_df['gold'] = df['reasoning']
     reasons_df['predictions'] = reasons
 
-    reasons_df.to_excel(f'outputs/decision_reasons.xlsx', sheet_name=f"{model_name}", index=False)
+    reasons_df.to_excel(f'outputs/reasons.xlsx', sheet_name=f"{model_name}", index=False)
 
 
 if __name__ == '__main__':
