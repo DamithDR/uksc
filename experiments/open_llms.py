@@ -14,7 +14,7 @@ def run(args):
     os.environ["CUDA_VISIBLE_DEVICES"] = args.visible_cuda_devices  # set the devices you need to run
     df = pd.read_excel('data/UKSC_dataset.xlsx', sheet_name='data')
 
-    df = df[:8]
+    df = df[:1]
 
     tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name)
     chat_template = None
@@ -44,10 +44,10 @@ def run(args):
             {"role": "system",
              "content": "Assume you are a judge at the supreme court in United Kingdom. "
                         "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision and the reasoning behind it."
-                        "First, classify whether the case is allowed or dismissed, select one from following : [allowed,dismissed]"
+                        "First, classify whether the case is allowed or dismissed, select one from following : [allow,dismiss]"
              },
             {"role": "user",
-             "content": f"Following is the case background, please provide the classification label, do not provide any reason at this stage. case: {background}"},
+             "content": f"Following is the case background, please provide the classification label, do not respond anything else other than allow/dismiss. case: {background}"},
         ]
         all_messages.append(messages)
 
@@ -59,7 +59,6 @@ def run(args):
         num_return_sequences=1,
         batch_size=8
     )
-    print(outputs)
     for output in outputs:
         resp = output["generated_text"][-1]['content'].strip()
         decisions.append(resp)
