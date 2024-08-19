@@ -92,7 +92,7 @@ def run(args):
         tokenizer=tokenizer_mt,
         trust_remote_code=True
     )
-    pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
+    # pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
     pipe.tokenizer.padding_side = 'left'
 
     label_classification_messages = get_messages_for_labels(df)
