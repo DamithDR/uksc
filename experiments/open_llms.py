@@ -100,8 +100,12 @@ def run(args):
     decisions_df = pd.DataFrame()
     decisions_df['gold'] = df['decision_label']
     decisions_df['predictions'] = decision_labels
-    with pd.ExcelWriter('outputs/decisions.xlsx', mode='a', engine='openpyxl') as writer:
-        decisions_df.to_excel(writer, sheet_name=f"{model_name}", index=False)
+
+    if not os.path.exists("outputs/decisions.xlsx"):
+        decisions_df.to_excel("outputs/decisions.xlsx", sheet_name=f"{model_name}", index=False)
+    else:
+        with pd.ExcelWriter('outputs/decisions.xlsx', mode='a', engine='openpyxl') as writer:
+            decisions_df.to_excel(writer, sheet_name=f"{model_name}", index=False)
 
     # save results of label evaluation
     w_recall, w_precision, w_f1, m_f1 = eval_decisions(decisions_df, 'predictions', 'gold')
@@ -128,8 +132,11 @@ def run(args):
     reasons_df['gold'] = df['reasoning']
     reasons_df['predictions'] = reasons
 
-    with pd.ExcelWriter('outputs/reasons.xlsx', mode='a', engine='openpyxl') as writer:
-        reasons_df.to_excel(writer, sheet_name=f"{model_name}", index=False)
+    if not os.path.exists("outputs/reasons.xlsx"):
+        decisions_df.to_excel("outputs/reasons.xlsx", sheet_name=f"{model_name}", index=False)
+    else:
+        with pd.ExcelWriter('outputs/reasons.xlsx', mode='a', engine='openpyxl') as writer:
+            reasons_df.to_excel(writer, sheet_name=f"{model_name}", index=False)
 
 
 if __name__ == '__main__':
