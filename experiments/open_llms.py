@@ -67,7 +67,7 @@ def get_chat_template():
 
 
 def run(args):
-    model_name = str(args.model_name).replace('/', '_')
+    model_name = str(args.model_name).split('/')[1] if str(args.model_name).__contains__('/') else str(args.model_name)
     os.environ["CUDA_VISIBLE_DEVICES"] = args.visible_cuda_devices  # set the devices you need to run
     df = pd.read_excel('data/UKSC_dataset.xlsx', sheet_name='data')
 
