@@ -73,7 +73,7 @@ def run(args):
 
     df = df[:10]
 
-    tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name)
+    tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name,trust_remote_code=True)
     chat_template = get_chat_template()
     if chat_template:
         tokenizer_mt.chat_template = chat_template
