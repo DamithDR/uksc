@@ -1,4 +1,5 @@
 import argparse
+import os
 
 import pandas as pd
 import torch
@@ -9,6 +10,7 @@ from util.eval import eval_decisions
 
 
 def run(args):
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.visible_cuda_devices # set the devices you need to run
     df = pd.read_excel('data/UKSC_dataset.xlsx', sheet_name='data')
 
     tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name)
@@ -46,9 +48,7 @@ def run(args):
         outputs = pipe(
             messages,
             max_new_tokens=2048,
-            temperature=0.9,
-            top_k=20,
-            top_p=0.8,
+            temperature=0.1,
             pad_token_id=pipe.model.config.eos_token_id,
             num_return_sequences=1,
         )
@@ -84,6 +84,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='''judgement prediction in UKSC cases''')
     parser.add_argument('--model_name', required=True, help='model_name')
+    parser.add_argument('--visible_cuda_devices', default="0,1,2", required=False, help='model_name')
     # parser.add_argument('--batch_size', type=int, required=False, default=8, help='batch_size')
     args = parser.parse_args()
     run(args)
