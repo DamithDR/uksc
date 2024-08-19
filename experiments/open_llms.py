@@ -96,6 +96,7 @@ def run(args):
         temperature=0.1,
         pad_token_id=pipe.model.config.eos_token_id,
         num_return_sequences=1,
+        do_sample=True,
         batch_size=args.batch_size
     )
     for output in tqdm(decision_outputs, total=len(decision_outputs), desc="extracting label outputs"):
@@ -125,6 +126,7 @@ def run(args):
         temperature=0.1,
         pad_token_id=pipe.model.config.eos_token_id,
         num_return_sequences=1,
+        do_sample=True,
         batch_size=int(args.batch_size / 2)
     )
 
