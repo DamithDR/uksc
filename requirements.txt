@@ -4,3 +4,9 @@ openpyxl
 accelerate
 openai
 scikit-learn
+pytest
+einops
+tiktoken
+protobuf
+sentencepiece
+flash_attn --no-build-isolation
