@@ -18,10 +18,11 @@ def get_messages_for_labels(df):
             {"role": "system",
              "content": "Assume you are a judge at the supreme court in United Kingdom. "
                         "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision label."
-                        "Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]."
+                        "Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]"
              },
             {"role": "user",
-             "content": f"The case title is {title}. Please understand the appellant and respondents using the title. Following is the case background, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss. appeal: {background}"},
+             "content": f"The case title is {title}. Please understand the appellant and respondents using the title. Following is the case background, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss."
+                        f"Appeal: {background}"},
         ]
         label_classification_messages.append(messages)
     return label_classification_messages
@@ -36,13 +37,14 @@ def get_messages_for_reasoning(df, decision_labels):
             {"role": "system",
              "content": "Assume you are a judge at the supreme court in United Kingdom. "
                         "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision label."
-                        "Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]."
+                        "Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]"
              },
             {"role": "user",
-             "content": f"The case title is {title}. Please understand the appellant and respondents using the title. Following is the case background, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss. appeal: {background}"},
+             "content": f"The case title is {title}. Please understand the appellant and respondents using the title. Following is the case background, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss. "
+                        f"Appeal: {background}"},
             {"role": "assistant", "content": label},
             {"role": "user",
-             "content": "Now please generate the reason behind your decision. Carefully consider the case background and your decided label and output the reasoning behind your decision."}
+             "content": "Now generate the reason behind your decision. Do not need to mention your decision label again. Carefully consider the case background and your decided label and only output the reasoning behind your decision."}
         ]
         reasoning_messages.append(messages)
     return reasoning_messages
@@ -98,7 +100,8 @@ def run(args):
     decisions_df = pd.DataFrame()
     decisions_df['gold'] = df['decision_label']
     decisions_df['predictions'] = decision_labels
-    decisions_df.to_excel(f'outputs/decisions.xlsx', sheet_name=f"{model_name}", index=False)
+    with pd.ExcelWriter('outputs/decisions.xlsx', mode='a', engine='openpyxl') as writer:
+        decisions_df.to_excel(writer, sheet_name=f"{model_name}", index=False)
 
     # save results of label evaluation
     w_recall, w_precision, w_f1, m_f1 = eval_decisions(decisions_df, 'predictions', 'gold')
@@ -125,7 +128,8 @@ def run(args):
     reasons_df['gold'] = df['reasoning']
     reasons_df['predictions'] = reasons
 
-    reasons_df.to_excel(f'outputs/reasons.xlsx', sheet_name=f"{model_name}", index=False)
+    with pd.ExcelWriter('outputs/reasons.xlsx', mode='a', engine='openpyxl') as writer:
+        reasons_df.to_excel(writer, sheet_name=f"{model_name}", index=False)
 
 
 if __name__ == '__main__':
