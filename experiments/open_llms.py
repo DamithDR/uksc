@@ -59,10 +59,8 @@ def run(args):
         num_return_sequences=1,
         batch_size=8
     )
-    # print(outputs)
     for output in outputs:
-        print(output)
-        resp = output["generated_text"][-1]['content'].strip()
+        resp = output[0]["generated_text"][-1]['content'].lower().strip()
         decisions.append(resp)
         print(resp)
 
