@@ -11,8 +11,9 @@ from util.eval import eval_decisions
 
 def get_messages_for_labels(df):
     label_classification_messages = []
-    for background, decision, reason in tqdm(zip(df['background'], df['decision'], df['reasoning']), total=len(df),
-                                             desc="generating label outputs"):
+    for background, decision, reason, title in tqdm(zip(df['background'], df['decision'], df['reasoning'], df['title']),
+                                                    total=len(df),
+                                                    desc="generating label outputs"):
         messages = [
             {"role": "system",
              "content": "Assume you are a judge at the supreme court in United Kingdom. "
@@ -20,7 +21,7 @@ def get_messages_for_labels(df):
                         "Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]."
              },
             {"role": "user",
-             "content": f"Following is the case background, please select allow/dismiss, do not respond anything else other than allow/dismiss. appeal: {background}"},
+             "content": f"The case title is {title}. Please understand the appellant and respondents using the title. Following is the case background, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss. appeal: {background}"},
         ]
         label_classification_messages.append(messages)
     return label_classification_messages
@@ -28,8 +29,8 @@ def get_messages_for_labels(df):
 
 def get_messages_for_reasoning(df, decision_labels):
     reasoning_messages = []
-    for background, decision, reason, label in tqdm(
-            zip(df['background'], df['decision'], df['reasoning'], decision_labels), total=len(df),
+    for background, decision, reason, title, label in tqdm(
+            zip(df['background'], df['decision'], df['reasoning'], df['title'], decision_labels), total=len(df),
             desc="generating label outputs"):
         messages = [
             {"role": "system",
@@ -38,7 +39,7 @@ def get_messages_for_reasoning(df, decision_labels):
                         "Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]."
              },
             {"role": "user",
-             "content": f"Following is the case background, please select allow/dismiss, do not respond anything else other than allow/dismiss. appeal: {background}"},
+             "content": f"The case title is {title}. Please understand the appellant and respondents using the title. Following is the case background, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss. appeal: {background}"},
             {"role": "assistant", "content": label},
             {"role": "user",
              "content": "Now please generate the reason behind your decision. Carefully consider the case background and your decided label and output the reasoning behind your decision."}
