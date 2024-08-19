@@ -85,8 +85,9 @@ def run(args):
         "text-generation",
         model=args.model_name,
         model_kwargs={"torch_dtype": torch.bfloat16,
-                      "attn_implementation": "flash_attention_2" if str(args.model_name).__contains__(
-                          'Phi-3') else None},
+                      # "attn_implementation": "flash_attention_2" if str(args.model_name).__contains__(
+                      #     'Phi-3') else None
+                      },
         device_map="auto",
         tokenizer=tokenizer_mt,
         trust_remote_code=True
