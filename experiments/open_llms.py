@@ -104,7 +104,7 @@ def run(args):
     if not os.path.exists("outputs/decisions.xlsx"):
         decisions_df.to_excel("outputs/decisions.xlsx", sheet_name=f"{model_name}", index=False)
     else:
-        with pd.ExcelWriter('outputs/decisions.xlsx', mode='a', engine='openpyxl') as writer:
+        with pd.ExcelWriter('outputs/decisions.xlsx', mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
             decisions_df.to_excel(writer, sheet_name=f"{model_name}", index=False)
 
     # save results of label evaluation
@@ -135,7 +135,7 @@ def run(args):
     if not os.path.exists("outputs/reasons.xlsx"):
         reasons_df.to_excel("outputs/reasons.xlsx", sheet_name=f"{model_name}", index=False)
     else:
-        with pd.ExcelWriter('outputs/reasons.xlsx', mode='a', engine='openpyxl') as writer:
+        with pd.ExcelWriter('outputs/reasons.xlsx', mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
             reasons_df.to_excel(writer, sheet_name=f"{model_name}", index=False)
 
 
