@@ -100,7 +100,7 @@ def run(args):
         label_classification_messages,
         max_new_tokens=2048,
         temperature=0.1,
-        pad_token_id=pipe.model.config.eos_token_id,
+        pad_token_id=pipe.model.config.eos_token_id if str(args.model_name) not in ['meta-llama/Meta-Llama-3.1-8B-Instruct'] else None,
         num_return_sequences=1,
         do_sample=True,
         batch_size=args.batch_size
