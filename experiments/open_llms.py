@@ -84,7 +84,8 @@ def run(args):
         model=args.model_name,
         model_kwargs={"torch_dtype": torch.bfloat16},
         device_map="auto",
-        tokenizer=tokenizer_mt
+        tokenizer=tokenizer_mt,
+        trust_remote_code=True
     )
     pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
     pipe.tokenizer.padding_side = 'left'
