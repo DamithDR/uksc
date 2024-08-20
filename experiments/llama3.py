@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import torch
 from tqdm import tqdm
-from transformers import pipeline, AutoTokenizer, AutoModel
+from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 
 from util.eval import eval_decisions
 
@@ -75,7 +75,7 @@ def run(args):
 
     tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True)
     tokenizer_mt.add_special_tokens({"pad_token": "<pad>"})
-    llm_model = AutoModel.from_pretrained(args.model_name, trust_remote_code=True)
+    llm_model = AutoModelForCausalLM.from_pretrained(args.model_name, trust_remote_code=True)
     llm_model.resize_token_embeddings(len(tokenizer_mt))
     chat_template = get_chat_template()
     if chat_template:
