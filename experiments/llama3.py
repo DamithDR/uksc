@@ -75,6 +75,9 @@ def run(args):
 
     tokenizer_mt = AutoTokenizer.from_pretrained('local_models/Meta-Llama-3.1-8B-Instruct', trust_remote_code=True)
     llm_model = AutoModelForCausalLM.from_pretrained('local_models/Meta-Llama-3.1-8B-Instruct', trust_remote_code=True)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # Move the model to GPU
+    llm_model.to(device)
     chat_template = get_chat_template()
     if chat_template:
         tokenizer_mt.chat_template = chat_template
@@ -90,7 +93,6 @@ def run(args):
         tokenizer=tokenizer_mt,
         trust_remote_code=True
     )
-    pipe.model.to("cuda")
 
     # pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
     pipe.tokenizer.padding_side = 'left'
