@@ -90,6 +90,7 @@ def run(args):
         tokenizer=tokenizer_mt,
         trust_remote_code=True
     )
+    pipe.model.to("cuda")
 
     # pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
     pipe.tokenizer.padding_side = 'left'
