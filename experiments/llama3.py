@@ -74,6 +74,7 @@ def run(args):
     df = df[:10]
 
     tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True)
+    tokenizer_mt.add_special_tokens({"pad_token": "<pad>"})
     chat_template = get_chat_template()
     if chat_template:
         tokenizer_mt.chat_template = chat_template
@@ -84,14 +85,12 @@ def run(args):
     pipe = pipeline(
         "text-generation",
         model=args.model_name,
-        model_kwargs={"torch_dtype": torch.bfloat16,
-                      # "attn_implementation": "flash_attention_2" if str(args.model_name).__contains__(
-                      #     'Phi-3') else None
-                      },
+        model_kwargs={"torch_dtype": torch.bfloat16},
         device_map="auto",
         tokenizer=tokenizer_mt,
         trust_remote_code=True
     )
+
     # pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
     pipe.tokenizer.padding_side = 'left'
 
@@ -103,7 +102,7 @@ def run(args):
         # pad_token_id=pipe.model.config.eos_token_id,
         num_return_sequences=1,
         do_sample=True,
-        batch_size=args.batch_size # does not work with the padding token issue
+        batch_size=args.batch_size  # does not work with the padding token issue
     )
     for output in tqdm(decision_outputs, total=len(decision_outputs), desc="extracting label outputs"):
         resp = output[0]["generated_text"][-1]['content'].lower().strip()
