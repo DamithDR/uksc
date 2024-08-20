@@ -73,10 +73,10 @@ def run(args):
 
     df = df[:10]
 
-    tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True)
-    chat_template = get_chat_template()
-    if chat_template:
-        tokenizer_mt.chat_template = chat_template
+    # tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True)
+    # chat_template = get_chat_template()
+    # if chat_template:
+    #     tokenizer_mt.chat_template = chat_template
 
     decision_labels = []
     # https://github.com/Dao-AILab/flash-attention/issues/246 - use this : pip install flash_attn --no-build-isolation
@@ -89,7 +89,7 @@ def run(args):
                       #     'Phi-3') else None
                       },
         device_map="auto",
-        tokenizer=tokenizer_mt,
+        # tokenizer=tokenizer_mt,
         trust_remote_code=True
     )
     pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
