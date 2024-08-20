@@ -71,7 +71,7 @@ def run(args):
     os.environ["CUDA_VISIBLE_DEVICES"] = args.visible_cuda_devices  # set the devices you need to run
     df = pd.read_excel('data/UKSC_dataset.xlsx', sheet_name='data')
 
-    df = df[:10] #todo: remove after test
+    df = df[:10]  # todo: remove after test
 
     tokenizer_mt = AutoTokenizer.from_pretrained('local_models/Meta-Llama-3.1-8B-Instruct', trust_remote_code=True)
     llm_model = AutoModelForCausalLM.from_pretrained('local_models/Meta-Llama-3.1-8B-Instruct', trust_remote_code=True)
@@ -154,7 +154,8 @@ def run(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='''judgement prediction in UKSC cases''')
-    parser.add_argument('--model_name', type=str, required=True, help='model_name')
+    parser.add_argument('--model_name', type=str, required=False, default='local_models/Meta-Llama-3.1-8B-Instruct',
+                        help='model_name')
     parser.add_argument('--visible_cuda_devices', type=str, default="0,1,2", required=False, help='model_name')
     parser.add_argument('--batch_size', type=int, required=False, default=8, help='batch_size')
     args = parser.parse_args()
