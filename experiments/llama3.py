@@ -74,10 +74,10 @@ def run(args):
     df = df[:10]  # todo: remove after test
 
     tokenizer_mt = AutoTokenizer.from_pretrained('local_models/Meta-Llama-3.1-8B-Instruct', trust_remote_code=True)
-    llm_model = AutoModelForCausalLM.from_pretrained('local_models/Meta-Llama-3.1-8B-Instruct', trust_remote_code=True)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # llm_model = AutoModelForCausalLM.from_pretrained('local_models/Meta-Llama-3.1-8B-Instruct', trust_remote_code=True)
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Move the model to GPU
-    llm_model.to(device)
+    # llm_model.to(device)
     chat_template = get_chat_template()
     if chat_template:
         tokenizer_mt.chat_template = chat_template
@@ -87,7 +87,7 @@ def run(args):
     # https://github.com/microsoft/Phi-3CookBook/issues/115 - phi-3 flash attention issue
     pipe = pipeline(
         "text-generation",
-        model=llm_model,
+        model='local_models/Meta-Llama-3.1-8B-Instruct',
         model_kwargs={"torch_dtype": torch.bfloat16},
         device_map="auto",
         tokenizer=tokenizer_mt,
