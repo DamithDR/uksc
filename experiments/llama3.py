@@ -103,7 +103,7 @@ def run(args):
         # pad_token_id=pipe.model.config.eos_token_id,
         num_return_sequences=1,
         do_sample=True,
-        batch_size=1 # does not work with the padding token issue
+        batch_size=args.batch_size # does not work with the padding token issue
     )
     for output in tqdm(decision_outputs, total=len(decision_outputs), desc="extracting label outputs"):
         resp = output[0]["generated_text"][-1]['content'].lower().strip()
@@ -130,10 +130,10 @@ def run(args):
         reasoning_messages,
         max_new_tokens=2048,
         temperature=0.1,
-        pad_token_id=pipe.model.config.eos_token_id,
+        # pad_token_id=pipe.model.config.eos_token_id,
         num_return_sequences=1,
         do_sample=True,
-        batch_size=1 # does not work with padding token issue
+        batch_size=args.batch_size
     )
 
     reasons = []
@@ -157,6 +157,6 @@ if __name__ == '__main__':
         description='''judgement prediction in UKSC cases''')
     parser.add_argument('--model_name', type=str, required=True, help='model_name')
     parser.add_argument('--visible_cuda_devices', type=str, default="0,1,2", required=False, help='model_name')
-    # parser.add_argument('--batch_size', type=int, required=False, default=8, help='batch_size')
+    parser.add_argument('--batch_size', type=int, required=False, default=8, help='batch_size')
     args = parser.parse_args()
     run(args)
