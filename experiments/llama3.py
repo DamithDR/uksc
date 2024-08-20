@@ -73,10 +73,8 @@ def run(args):
 
     df = df[:10] #todo: remove after test
 
-    tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True)
-    tokenizer_mt.add_special_tokens({"pad_token": "<pad>"})
-    llm_model = AutoModelForCausalLM.from_pretrained(args.model_name, trust_remote_code=True)
-    llm_model.resize_token_embeddings(len(tokenizer_mt))
+    tokenizer_mt = AutoTokenizer.from_pretrained('local_models/Meta-Llama-3.1-8B-Instruct', trust_remote_code=True)
+    llm_model = AutoModelForCausalLM.from_pretrained('local_models/Meta-Llama-3.1-8B-Instruct', trust_remote_code=True)
     chat_template = get_chat_template()
     if chat_template:
         tokenizer_mt.chat_template = chat_template
