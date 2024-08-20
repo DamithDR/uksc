@@ -133,7 +133,7 @@ def run(args):
         pad_token_id=pipe.model.config.eos_token_id,
         num_return_sequences=1,
         do_sample=True,
-        batch_size=int(args.batch_size / 2)
+        batch_size=1 # does not work with padding token issue
     )
 
     reasons = []
@@ -157,6 +157,6 @@ if __name__ == '__main__':
         description='''judgement prediction in UKSC cases''')
     parser.add_argument('--model_name', type=str, required=True, help='model_name')
     parser.add_argument('--visible_cuda_devices', type=str, default="0,1,2", required=False, help='model_name')
-    parser.add_argument('--batch_size', type=int, required=False, default=8, help='batch_size')
+    # parser.add_argument('--batch_size', type=int, required=False, default=8, help='batch_size')
     args = parser.parse_args()
     run(args)
