@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import torch
 from tqdm import tqdm
-from transformers import pipeline, AutoTokenizer
+from transformers import pipeline, AutoTokenizer, AutoModel
 
 from util.eval import eval_decisions
 
@@ -71,10 +71,12 @@ def run(args):
     os.environ["CUDA_VISIBLE_DEVICES"] = args.visible_cuda_devices  # set the devices you need to run
     df = pd.read_excel('data/UKSC_dataset.xlsx', sheet_name='data')
 
-    df = df[:10]
+    df = df[:10] #todo: remove after test
 
     tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True)
     tokenizer_mt.add_special_tokens({"pad_token": "<pad>"})
+    llm_model = AutoModel.from_pretrained(args.model_name, trust_remote_code=True)
+    llm_model.resize_token_embeddings(len(tokenizer_mt))
     chat_template = get_chat_template()
     if chat_template:
         tokenizer_mt.chat_template = chat_template
@@ -84,7 +86,7 @@ def run(args):
     # https://github.com/microsoft/Phi-3CookBook/issues/115 - phi-3 flash attention issue
     pipe = pipeline(
         "text-generation",
-        model=args.model_name,
+        model=llm_model,
         model_kwargs={"torch_dtype": torch.bfloat16},
         device_map="auto",
         tokenizer=tokenizer_mt,
