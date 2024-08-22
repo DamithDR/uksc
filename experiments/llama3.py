@@ -69,22 +69,15 @@ def get_chat_template():
 def run(args):
     model_name = str(args.model_name).split('/')[1] if str(args.model_name).__contains__('/') else str(args.model_name)
     os.environ["CUDA_VISIBLE_DEVICES"] = args.visible_cuda_devices  # set the devices you need to run
-    df = pd.read_excel('data/UKSC_dataset.xlsx', sheet_name='data')
+    df = pd.read_excel('data/test_data.xlsx', sheet_name='data')
 
-    df = df[:10]  # todo: remove after test
 
     tokenizer_mt = AutoTokenizer.from_pretrained('local_models/Meta-Llama-3.1-8B-Instruct', trust_remote_code=True)
-    # llm_model = AutoModelForCausalLM.from_pretrained('local_models/Meta-Llama-3.1-8B-Instruct', trust_remote_code=True)
-    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # Move the model to GPU
-    # llm_model.to(device)
     chat_template = get_chat_template()
     if chat_template:
         tokenizer_mt.chat_template = chat_template
 
     decision_labels = []
-    # https://github.com/Dao-AILab/flash-attention/issues/246 - use this : pip install flash_attn --no-build-isolation
-    # https://github.com/microsoft/Phi-3CookBook/issues/115 - phi-3 flash attention issue
     pipe = pipeline(
         "text-generation",
         model='local_models/Meta-Llama-3.1-8B-Instruct',

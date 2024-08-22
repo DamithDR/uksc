@@ -9,7 +9,7 @@ from util.eval import eval_decisions
 
 
 def run(args):
-    df = pd.read_excel('data/UKSC_dataset.xlsx', sheet_name='data')
+    df = pd.read_excel('data/UKSC_dataset_backup.xlsx', sheet_name='data')
 
     responses = []
     pipe = pipeline(

@@ -69,9 +69,7 @@ def get_chat_template():
 def run(args):
     model_name = str(args.model_name).split('/')[1] if str(args.model_name).__contains__('/') else str(args.model_name)
     os.environ["CUDA_VISIBLE_DEVICES"] = args.visible_cuda_devices  # set the devices you need to run
-    df = pd.read_excel('data/UKSC_dataset.xlsx', sheet_name='data')
-
-    df = df[:10]
+    df = pd.read_excel('data/test_data.xlsx', sheet_name='data')
 
     tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True)
     chat_template = get_chat_template()
@@ -110,6 +108,7 @@ def run(args):
         decision_labels.append(resp)
 
     decisions_df = pd.DataFrame()
+    decisions_df['date'] = df['decision_date']
     decisions_df['gold'] = df['decision_label']
     decisions_df['predictions'] = decision_labels
 
@@ -142,6 +141,7 @@ def run(args):
         reasons.append(resp)
 
     reasons_df = pd.DataFrame()
+    reasons_df['date'] = df['decision_date']
     reasons_df['gold'] = df['reasoning']
     reasons_df['predictions'] = reasons
 
