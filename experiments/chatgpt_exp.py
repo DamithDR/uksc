@@ -1,4 +1,5 @@
 import json
+import os
 import time
 
 import pandas as pd
@@ -6,6 +7,7 @@ from openai import OpenAI
 from tqdm import tqdm
 
 from util.eval import eval_decisions
+
 
 def get_messages_for_labels(df):
     label_classification_messages = []
@@ -51,53 +53,63 @@ def get_messages_for_reasoning(df, decision_labels):
 def run():
     client = OpenAI()
 
-    decisions = []
-    reasons = []
-    model = 'gpt-3.5-turbo-0125'
-    # model="gpt-4-0125-preview",
+    # model = 'gpt-3.5-turbo-0125'
+    model="gpt-4-turbo-2024-04-09"
     df = pd.read_excel('data/test_data.xlsx', sheet_name='data')
-    for background, decision, reason in tqdm(zip(df['background'], df['decision'], df['reasoning']), total=len(df)):
+    decision_messages = get_messages_for_labels(df)
+    decisions = []
+    for messages in tqdm(decision_messages, total=len(decision_messages)):
         response = client.chat.completions.create(
-            messages=[
-                {"role": "system",
-                 "content": "Assume you are a judge in supreme court in United Kingdom, "
-                            "your duty is to understand the following case background and output the "
-                            "outcome and the reasoning behind it."
-                            "In your response, first show if the appeal is Approved or Dismissed. Then provide the legal reasoning behind your judgement"
-                            "Please provide your answer in the following format: "
-                            "{allow/dismiss}###{Reason}"
-                 },
-                {"role": "user", "content": background},
-            ],
+            messages=messages,
             model=model,
             temperature=0.1,
             max_tokens=2048,
         )
-
-        resp = response.choices[0].message.content
-        print(resp)
-        split = resp.split('###')
-
-        decisions.append(split[0].strip().lower())
-        reasons.append(split[1].strip())
-        time.sleep(0.2)
+        decisions.append(response.choices[0].message.content)
+        time.sleep(0.1)
 
     decisions_df = pd.DataFrame()
+    decisions_df['date'] = df['decision_date']
     decisions_df['gold'] = df['decision_label']
     decisions_df['predictions'] = decisions
 
-    reasons_df = pd.DataFrame()
-    reasons_df['gold'] = df['reasoning']
-    reasons_df['predictions'] = reasons
-
-    decisions_df.to_excel(f'outputs/chatgpt_decisions.xlsx', index=False)
-    reasons_df.to_excel(f'outputs/chatgpt_reasons.xlsx', index=False)
+    if not os.path.exists("outputs/chatgpt_decisions.xlsx"):
+        decisions_df.to_excel("outputs/chatgpt_decisions.xlsx", sheet_name=model, index=False)
+    else:
+        with pd.ExcelWriter('outputs/chatgpt_decisions.xlsx', mode='a', engine='openpyxl',
+                            if_sheet_exists='replace') as writer:
+            decisions_df.to_excel(writer, sheet_name=model, index=False)
 
     w_recall, w_precision, w_f1, m_f1 = eval_decisions(decisions_df, 'predictions', 'gold')
-
     with open(f'decision_stats.tsv', 'a') as f:
         f.write(
             f'{model}\t{w_recall}\t{w_precision}\t{w_f1}\t{m_f1}\n')
+
+    # reasoning
+    reason_messages = get_messages_for_reasoning(df, decisions)
+    reasons = []
+    for messages in tqdm(reason_messages, total=len(reason_messages)):
+        response = client.chat.completions.create(
+            messages=messages,
+            model=model,
+            temperature=0.1,
+            max_tokens=2048,
+        )
+        reasons.append(response.choices[0].message.content)
+        time.sleep(0.1)
+
+    reasons_df = pd.DataFrame()
+    reasons_df['date'] = df['decision_date']
+    reasons_df['gold'] = df['reasoning']
+    reasons_df['predictions'] = reasons
+
+    if not os.path.exists("outputs/chatgpt_reasons.xlsx"):
+        reasons_df.to_excel("outputs/chatgpt_reasons.xlsx", sheet_name=model, index=False)
+    else:
+        with pd.ExcelWriter('outputs/chatgpt_reasons.xlsx', mode='a', engine='openpyxl',
+                            if_sheet_exists='replace') as writer:
+            reasons_df.to_excel(writer, sheet_name=model, index=False)
+
 
 if __name__ == '__main__':
     run()
