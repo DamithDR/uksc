@@ -106,6 +106,7 @@ def run(args):
         decision_labels.append(resp)
 
     decisions_df = pd.DataFrame()
+    decisions_df['date'] = df['decision_date']
     decisions_df['gold'] = df['decision_label']
     decisions_df['predictions'] = decision_labels
 
@@ -139,6 +140,7 @@ def run(args):
         reasons.append(resp)
 
     reasons_df = pd.DataFrame()
+    reasons_df['date'] = df['decision_date']
     reasons_df['gold'] = df['reasoning']
     reasons_df['predictions'] = reasons
 

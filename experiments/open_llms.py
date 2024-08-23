@@ -53,11 +53,11 @@ def get_messages_for_reasoning(df, decision_labels):
 def get_chat_template():
     # https://github.com/chujiezheng/chat_templates/tree/main/chat_templates
     chat_template = None
-    if str(args.model_name).__contains__('mistral'):
+    if str(args.model_name).__contains__('mistral') or str(args.model_name).__contains__('Saul'):
         chat_template = open('templates/mistral-instruct.jinja').read()
     elif str(args.model_name).__contains__('falcon'):
         chat_template = open('templates/falcon-instruct.jinja').read()
-    elif str(args.model_name).__contains__('Llama-2') or str(args.model_name).__contains__('Saul'):
+    elif str(args.model_name).__contains__('Llama-2'):
         chat_template = open('templates/llama-2-chat.jinja').read()
     elif str(args.model_name).__contains__('Meta-Llama-3'):
         chat_template = open('templates/llama-3-instruct.jinja').read()
