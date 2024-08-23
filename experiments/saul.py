@@ -67,13 +67,15 @@ def get_chat_template():
 
 
 def run(args):
-
     print(f'{args.model_name} : Running Started')
     model_name = str(args.model_name).split('/')[1] if str(args.model_name).__contains__('/') else str(args.model_name)
     os.environ["CUDA_VISIBLE_DEVICES"] = args.visible_cuda_devices  # set the devices you need to run
     df = pd.read_excel('data/test_data.xlsx', sheet_name='data')
 
+    df = df[:10]
+
     tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True)
+    tokenizer_mt.set_default_template = False
     chat_template = get_chat_template()
     if chat_template:
         tokenizer_mt.chat_template = chat_template
@@ -95,9 +97,15 @@ def run(args):
     pipe.tokenizer.padding_side = 'left'
 
     label_classification_messages = get_messages_for_labels(df)
+    prompts = list(
+        map(lambda messages: pipe.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True),
+            label_classification_messages))
+
+    prompts = list(map(lambda prompt: '[INST]' + prompt + '[/INST]', prompts))
+
     print(f'{args.model_name} : Generating decision labels')
     decision_outputs = pipe(
-        label_classification_messages,
+        prompts,
         max_new_tokens=2048,
         temperature=0.1,
         pad_token_id=pipe.model.config.eos_token_id,
@@ -127,9 +135,16 @@ def run(args):
             f'{model_name}\t{round(w_recall, 2)}\t{round(w_precision, 2)}\t{round(w_f1, 2)}\t{round(m_f1, 2)}\n')
 
     reasoning_messages = get_messages_for_reasoning(df, decision_labels)
+
+    prompts = list(
+        map(lambda messages: pipe.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True),
+            reasoning_messages))
+
+    prompts = list(map(lambda prompt: '[INST]' + prompt + '[/INST]', prompts))
+
     print(f'{args.model_name} : Generating Reasons')
     reasoning_outputs = pipe(
-        reasoning_messages,
+        prompts,
         max_new_tokens=2048,
         temperature=0.1,
         pad_token_id=pipe.model.config.eos_token_id,
@@ -155,10 +170,12 @@ def run(args):
             reasons_df.to_excel(writer, sheet_name=f"{model_name}", index=False)
     print(f'{args.model_name} : Outputs saved')
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='''judgement prediction in UKSC cases''')
-    parser.add_argument('--model_name', type=str, required=True, help='model_name')
+    parser.add_argument('--model_name', type=str, default='Equall/Saul-7B-Instruct-v1', required=False,
+                        help='model_name')
     parser.add_argument('--visible_cuda_devices', type=str, default="0,1,2", required=False, help='model_name')
     parser.add_argument('--batch_size', type=int, required=False, default=8, help='batch_size')
     args = parser.parse_args()
