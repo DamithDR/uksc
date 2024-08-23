@@ -77,6 +77,8 @@ def run(args):
     chat_template = get_chat_template()
     if chat_template:
         tokenizer_mt.chat_template = chat_template
+    if str(args.model_name).__contains__('Saul'):
+        tokenizer_mt.set_default_template = False #https://huggingface.co/Equall/Saul-7B-Instruct-v1/discussions/5
 
     decision_labels = []
     # https://github.com/Dao-AILab/flash-attention/issues/246 - use this : pip install flash_attn --no-build-isolation

@@ -63,12 +63,18 @@ if __name__ == '__main__':
         m_f1_model_specific, w_f1_model_specific = evaluate_decisions(model, date)
         m_f1_global, w_f1_global = evaluate_decisions(model, global_cutoff_date)
 
-        with open(f'evaluation/date_wise_macro_f1.tsv', 'a') as f:
-            f.write(f'{model}\t{m_f1_all}\t{m_f1_model_specific}\t{m_f1_global}\n')
+        # with open(f'evaluation/date_wise_macro_f1.tsv', 'a') as f:
+        #     f.write(f'{model}\t{m_f1_all}\t{m_f1_model_specific}\t{m_f1_global}\n')
+        #
+        # with open(f'evaluation/date_wise_weighted_f1.tsv', 'a') as f:
+        #     f.write(f'{model}\t{w_f1_all}\t{w_f1_model_specific}\t{w_f1_global}\n')
 
-        with open(f'evaluation/date_wise_weighted_f1.tsv', 'a') as f:
-            f.write(f'{model}\t{w_f1_all}\t{w_f1_model_specific}\t{w_f1_global}\n')
+        bleu_all, rouge_all = evaluate_reasons(model)
+        bleu_model, rouge_model = evaluate_reasons(model, date)
+        bleu_global, rouge_global = evaluate_reasons(model, global_cutoff_date)
 
-        # evaluate_reasons(model)
-        # evaluate_reasons(model, date)
-        # evaluate_reasons(model, global_cutoff_date)
+        with open(f'evaluation/date_wise_bleu.tsv', 'a') as f:
+            f.write(f'{model}\t{bleu_all}\t{bleu_model}\t{bleu_global}\n')
+
+        with open(f'evaluation/date_wise_rouge.tsv', 'a') as f:
+            f.write(f'{model}\t{rouge_all}\t{rouge_model}\t{rouge_global}\n')
