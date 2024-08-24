@@ -6,48 +6,49 @@ import torch
 from tqdm import tqdm
 from transformers import pipeline, AutoTokenizer
 
+from experiments.open_llms import get_messages_for_labels, get_messages_for_reasoning
 from util.eval import eval_decisions
 
 
-def get_messages_for_labels(df):
-    label_classification_messages = []
-    for background, decision, reason, title in tqdm(zip(df['background'], df['decision'], df['reasoning'], df['title']),
-                                                    total=len(df),
-                                                    desc="generating label outputs"):
-        messages = [
-            {"role": "system",
-             "content": "Assume you are a judge at the supreme court in United Kingdom. "
-                        "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision label."
-                        "Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]"
-             },
-            {"role": "user",
-             "content": f"The case title is {title}. Please recognise the appellant and respondents seperately using the given title as they have indicated within brackets. Following is the case background, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss. "
-                        f"Appeal: {background}"},
-        ]
-        label_classification_messages.append(messages)
-    return label_classification_messages
-
-
-def get_messages_for_reasoning(df, decision_labels):
-    reasoning_messages = []
-    for background, decision, reason, title, label in tqdm(
-            zip(df['background'], df['decision'], df['reasoning'], df['title'], decision_labels), total=len(df),
-            desc="generating label outputs"):
-        messages = [
-            {"role": "system",
-             "content": "Assume you are a judge at the supreme court in United Kingdom. "
-                        "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision label."
-                        "Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]"
-             },
-            {"role": "user",
-             "content": f"The case title is {title}. Please recognise the appellant and respondent seperately using the given title as they have indicated within brackets. Following is the case background, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss. "
-                        f"Appeal: {background}"},
-            {"role": "assistant", "content": label},
-            {"role": "user",
-             "content": "Now generate the reason behind your decision. Do not need to mention your decision label again. Carefully consider the case background and your decided label and only output the reasoning behind your decision."}
-        ]
-        reasoning_messages.append(messages)
-    return reasoning_messages
+# def get_messages_for_labels(df):
+#     label_classification_messages = []
+#     for background, decision, reason, title in tqdm(zip(df['background'], df['decision'], df['reasoning'], df['title']),
+#                                                     total=len(df),
+#                                                     desc="generating label outputs"):
+#         messages = [
+#             {"role": "system",
+#              "content": "Assume you are a judge at the supreme court in United Kingdom. "
+#                         "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision label."
+#                         "Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]"
+#              },
+#             {"role": "user",
+#              "content": f"The case title is {title}. Please recognise the appellant and respondents seperately using the given title as they have indicated within brackets. Following is the case background, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss. "
+#                         f"Appeal: {background}"},
+#         ]
+#         label_classification_messages.append(messages)
+#     return label_classification_messages
+#
+#
+# def get_messages_for_reasoning(df, decision_labels):
+#     reasoning_messages = []
+#     for background, decision, reason, title, label in tqdm(
+#             zip(df['background'], df['decision'], df['reasoning'], df['title'], decision_labels), total=len(df),
+#             desc="generating label outputs"):
+#         messages = [
+#             {"role": "system",
+#              "content": "Assume you are a judge at the supreme court in United Kingdom. "
+#                         "You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision label."
+#                         "Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]"
+#              },
+#             {"role": "user",
+#              "content": f"The case title is {title}. Please recognise the appellant and respondent seperately using the given title as they have indicated within brackets. Following is the case background, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss. "
+#                         f"Appeal: {background}"},
+#             {"role": "assistant", "content": label},
+#             {"role": "user",
+#              "content": "Now generate the reason behind your decision. Do not need to mention your decision label again. Carefully consider the case background and your decided label and only output the reasoning behind your decision."}
+#         ]
+#         reasoning_messages.append(messages)
+#     return reasoning_messages
 
 
 def get_chat_template():
