@@ -54,8 +54,8 @@ from util.eval import eval_decisions
 def run(mode='default'):
     client = OpenAI()
 
-    model = 'gpt-3.5-turbo-0125'
-    # model = "gpt-4-turbo-2024-04-09"
+    # model = 'gpt-3.5-turbo-0125'
+    model = "gpt-4-turbo-2024-04-09"
     df = pd.read_excel('data/test_data.xlsx', sheet_name='data')
     decision_messages = get_messages_for_labels(df, mode)
     decisions = []

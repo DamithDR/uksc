@@ -69,7 +69,7 @@ def get_chat_template():
         chat_template = open('templates/mistral-instruct.jinja').read()
     elif str(args.model_name).__contains__('falcon'):
         chat_template = open('templates/falcon-instruct.jinja').read()
-    elif str(args.model_name).__contains__('Llama-2'):
+    elif str(args.model_name).__contains__('Llama-2') or str(args.model_name).__contains__('Saul-7B'):
         chat_template = open('templates/llama-2-chat.jinja').read()
     elif str(args.model_name).__contains__('Meta-Llama-3'):
         chat_template = open('templates/llama-3-instruct.jinja').read()

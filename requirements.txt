@@ -12,3 +12,4 @@ sentencepiece
 flash_attn --no-build-isolation
 rouge-score
 nltk
+bert_score
