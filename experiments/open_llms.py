@@ -18,7 +18,7 @@ def get_messages_for_labels(df, run_mode=None):
         mode_string = ''
         if run_mode == 'tag':
             mode_string = 'Please recall your law knowledge related to UK legislation and UK case law regarding legal areas : '
-            mode_string += str(legal_area).replace(',', 'and')
+            mode_string += str(legal_area).replace(',', ' and ')
             mode_string += '.'
         messages = [
             {"role": "system",
@@ -106,6 +106,8 @@ def run(args):
     pipe.tokenizer.padding_side = 'left'
 
     label_classification_messages = get_messages_for_labels(df, args.run_mode)
+
+    print(label_classification_messages[0])
     print(f'{args.model_name} : Generating decision labels')
     decision_outputs = pipe(
         label_classification_messages,
@@ -139,6 +141,7 @@ def run(args):
             f'{model_name}\t{round(w_recall, 2)}\t{round(w_precision, 2)}\t{round(w_f1, 2)}\t{round(m_f1, 2)}\n')
 
     reasoning_messages = get_messages_for_reasoning(df, decision_labels, args.run_mode)
+    print(reasoning_messages[0])
     print(f'{args.model_name} : Generating Reasons')
     reasoning_outputs = pipe(
         reasoning_messages,
