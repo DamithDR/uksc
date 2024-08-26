@@ -49,9 +49,8 @@ def evaluate_reasons(model_name, input_path, filter_date=None):
     references = reasons['gold'].tolist()
     candidates = reasons['predictions'].tolist()
     P, R, F1 = score(candidates, references, lang='en', verbose=True)
-    # F1 =0 # todo remove
     print(
-        f'model : {model_name} | filter date {filter_date} | bleu : {np.mean(blue_scores)} | rough : {np.mean(r_scores)} | bert score : {F1}')
+        f'model : {model_name} | filter date {filter_date} | bleu : {np.mean(blue_scores)} | rough : {np.mean(r_scores)} | bert score : {F1.mean().item():.4f}')
     return np.mean(blue_scores), np.mean(r_scores), F1
 
 
@@ -74,17 +73,17 @@ if __name__ == '__main__':
     model_cutoff_dates = ['7/31/2023', '10/31/2023', '10/31/2023', '2/28/2023', '12/31/2023', '9/30/2021', '12/31/2023']
 
     for model, date in zip(models, model_cutoff_dates):
-        m_f1_all, w_f1_all = evaluate_decisions(model, input_path=input_decisions, tag_path=tag_path)
-        m_f1_model_specific, w_f1_model_specific = evaluate_decisions(model, input_path=input_decisions,
-                                                                      tag_path=tag_path, filter_date=date)
-        m_f1_global, w_f1_global = evaluate_decisions(model, input_path=input_decisions,
-                                                      tag_path=tag_path, filter_date=date)
-
-        with open(f'results/{tag_path}date_wise_macro_f1.tsv', 'a') as f:
-            f.write(f'{model}\t{m_f1_all}\t{m_f1_model_specific}\t{m_f1_global}\n')
-
-        with open(f'results/{tag_path}date_wise_weighted_f1.tsv', 'a') as f:
-            f.write(f'{model}\t{w_f1_all}\t{w_f1_model_specific}\t{w_f1_global}\n')
+        # m_f1_all, w_f1_all = evaluate_decisions(model, input_path=input_decisions, tag_path=tag_path)
+        # m_f1_model_specific, w_f1_model_specific = evaluate_decisions(model, input_path=input_decisions,
+        #                                                               tag_path=tag_path, filter_date=date)
+        # m_f1_global, w_f1_global = evaluate_decisions(model, input_path=input_decisions,
+        #                                               tag_path=tag_path, filter_date=date)
+        #
+        # with open(f'results/{tag_path}date_wise_macro_f1.tsv', 'a') as f:
+        #     f.write(f'{model}\t{m_f1_all}\t{m_f1_model_specific}\t{m_f1_global}\n')
+        #
+        # with open(f'results/{tag_path}date_wise_weighted_f1.tsv', 'a') as f:
+        #     f.write(f'{model}\t{w_f1_all}\t{w_f1_model_specific}\t{w_f1_global}\n')
 
         bleu_all, rouge_all, bertF1_all = evaluate_reasons(model, input_path=input_reasons)
         bleu_model, rouge_model, bertF1_model = evaluate_reasons(model, input_path=input_reasons, filter_date=date)

@@ -23,7 +23,7 @@ def run(input_file, input_gpt_file, output_file):
         decisions = list(map(lambda x: x.replace('[', ''), decisions))
         decisions = list(map(lambda x: x.replace(']', ''), decisions))
         model_decisions['predictions'] = decisions
-        if not os.path.exists("evaluation/decisions.xlsx"):
+        if not os.path.exists(output_file):
             model_decisions.to_excel(output_file, sheet_name=model, index=False)
         else:
             with pd.ExcelWriter(output_file, mode='a', engine='openpyxl',
@@ -53,8 +53,8 @@ def run(input_file, input_gpt_file, output_file):
 if __name__ == '__main__':
 
     if tag:
-        input_file = 'outputs/decisions.xlsx'
-        input_gpt_file = 'outputs/chatgpt_decisions.xlsx'
+        input_file = 'outputs/decisions_tag.xlsx'
+        input_gpt_file = 'outputs/chatgpt_decisions_tag.xlsx'
         output_file = 'evaluation/decisions_tag.xlsx'
     else:
         input_file = 'outputs/decisions.xlsx'
