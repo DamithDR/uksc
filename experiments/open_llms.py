@@ -17,7 +17,7 @@ def get_messages_for_labels(df, run_mode=None):
             desc="generating label outputs"):
         mode_string = ''
         if run_mode == 'tag':
-            mode_string = 'Please recall your law knowledge related to UK legislation and UK case law regarding following legal areas : '
+            mode_string = 'Please recall your law knowledge related to UK legislation and UK case law regarding legal areas : '
             mode_string += str(legal_area).replace(',', ' and ')
             mode_string += '.'
         messages = [
@@ -42,7 +42,7 @@ def get_messages_for_reasoning(df, decision_labels, run_mode=None):
             desc="generating label outputs"):
         mode_string = ''
         if run_mode == 'tag':
-            mode_string = 'Please recall your law knowledge related to UK legislation and UK case law regarding following legal areas : '
+            mode_string = 'Please recall your law knowledge related to UK legislation and UK case law regarding legal areas : '
             mode_string += str(legal_area).replace(',', ' and ')
             mode_string += '.'
         messages = [
