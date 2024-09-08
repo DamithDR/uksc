@@ -51,7 +51,7 @@ def evaluate_reasons(model_name, input_path, filter_date=None):
     P, R, F1 = score(candidates, references, lang='en', verbose=True)
     print(
         f'model : {model_name} | filter date {filter_date} | bleu : {np.mean(blue_scores)} | rough : {np.mean(r_scores)} | bert score : {F1.mean().item():.4f}')
-    return np.mean(blue_scores), np.mean(r_scores), F1
+    return np.mean(blue_scores), np.mean(r_scores), f'{F1.mean().item():.4f}'
 
 
 if __name__ == '__main__':
