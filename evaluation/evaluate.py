@@ -18,7 +18,7 @@ def evaluate_decisions(model_name, input_path, tag_path, filter_date=None):
     with open(f'results/{tag_path}decision_stats.tsv', 'a') as f:
         f.write(
             f'{model_name}\t{filter_date}\t{w_recall:.2f}\t{w_precision:.2f}\t{w_f1:.2f}\t{m_f1:.2f}\n')
-    return f'{m_f1:.2f}', f'{w_f1:.2f}'
+    return f'{m_f1:.3f}', f'{w_f1:.3f}'
 
 
 def evaluate_reasons(model_name, input_path, filter_date=None):
@@ -51,7 +51,7 @@ def evaluate_reasons(model_name, input_path, filter_date=None):
     P, R, F1 = score(candidates, references, lang='en', verbose=True)
     print(
         f'model : {model_name} | filter date {filter_date} | bleu : {np.mean(blue_scores)} | rough : {np.mean(r_scores)} | bert score : {F1.mean().item():.4f}')
-    return np.mean(blue_scores), np.mean(r_scores), f'{F1.mean().item():.4f}'
+    return np.mean(blue_scores), np.mean(r_scores), f'{F1.mean().item():.3f}'
 
 
 if __name__ == '__main__':
@@ -73,27 +73,28 @@ if __name__ == '__main__':
     model_cutoff_dates = ['7/31/2023', '10/31/2023', '10/31/2023', '2/28/2023', '12/31/2023', '9/30/2021', '12/31/2023']
 
     for model, date in zip(models, model_cutoff_dates):
-        # m_f1_all, w_f1_all = evaluate_decisions(model, input_path=input_decisions, tag_path=tag_path)
-        # m_f1_model_specific, w_f1_model_specific = evaluate_decisions(model, input_path=input_decisions,
-        #                                                               tag_path=tag_path, filter_date=date)
-        # m_f1_global, w_f1_global = evaluate_decisions(model, input_path=input_decisions,
-        #                                               tag_path=tag_path, filter_date=date)
-        #
-        # with open(f'results/{tag_path}date_wise_macro_f1.tsv', 'a') as f:
-        #     f.write(f'{model}\t{m_f1_all}\t{m_f1_model_specific}\t{m_f1_global}\n')
-        #
-        # with open(f'results/{tag_path}date_wise_weighted_f1.tsv', 'a') as f:
-        #     f.write(f'{model}\t{w_f1_all}\t{w_f1_model_specific}\t{w_f1_global}\n')
+        m_f1_all, w_f1_all = evaluate_decisions(model, input_path=input_decisions, tag_path=tag_path)
+        m_f1_model_specific, w_f1_model_specific = evaluate_decisions(model, input_path=input_decisions,
+                                                                      tag_path=tag_path, filter_date=date)
+        m_f1_global, w_f1_global = evaluate_decisions(model, input_path=input_decisions,
+                                                      tag_path=tag_path, filter_date=global_cutoff_date)
+
+        with open(f'results/{tag_path}date_wise_macro_f1.csv', 'a') as f:
+            f.write(f'{model} & {m_f1_all} & {m_f1_model_specific} & {m_f1_global}\n')
+
+        with open(f'results/{tag_path}date_wise_weighted_f1.csv', 'a') as f:
+            f.write(f'{model} & {w_f1_all} & {w_f1_model_specific} & {w_f1_global}\n')
 
         bleu_all, rouge_all, bertF1_all = evaluate_reasons(model, input_path=input_reasons)
         bleu_model, rouge_model, bertF1_model = evaluate_reasons(model, input_path=input_reasons, filter_date=date)
-        bleu_global, rouge_global, bertF1_global = evaluate_reasons(model, input_path=input_reasons, filter_date=date)
+        bleu_global, rouge_global, bertF1_global = evaluate_reasons(model, input_path=input_reasons,
+                                                                    filter_date=global_cutoff_date)
 
         with open(f'results/{tag_path}date_wise_bleu.tsv', 'a') as f:
-            f.write(f'{model}\t{bleu_all}\t{bleu_model}\t{bleu_global}\n')
+            f.write(f'{model} & {bleu_all:.3f} & {bleu_model:.3f} & {bleu_global:.3f}\n')
 
         with open(f'results/{tag_path}date_wise_rouge.tsv', 'a') as f:
-            f.write(f'{model}\t{rouge_all}\t{rouge_model}\t{rouge_global}\n')
+            f.write(f'{model} & {rouge_all:.3f} & {rouge_model:.3f} & {rouge_global:.3f}\n')
 
         with open(f'results/{tag_path}date_wise_bertscore.tsv', 'a') as f:
-            f.write(f'{model}\t{bertF1_all}\t{bertF1_model}\t{bertF1_global}\n')
+            f.write(f'{model} & {bertF1_all} & {bertF1_model} & {bertF1_global}\n')
