@@ -117,7 +117,7 @@ def run(args):
         do_sample=True,
         batch_size=args.batch_size,
         truncation = True,
-        max_length = 16384
+        # max_length = 16384
     )
     for output in tqdm(decision_outputs, total=len(decision_outputs), desc="extracting label outputs"):
         resp = output[0]["generated_text"][-1]['content'].lower().strip()
@@ -152,7 +152,7 @@ def run(args):
         do_sample=True,
         batch_size=int(args.batch_size / 2),
         truncation = True,
-        max_length = 16384
+        # max_length = 16384
     )
 
     reasons = []
