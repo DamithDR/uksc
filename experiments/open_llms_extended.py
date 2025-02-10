@@ -175,7 +175,7 @@ if __name__ == '__main__':
         description='''judgement prediction in UKSC cases''')
     parser.add_argument('--model_name', type=str, required=True, help='model_name')
     parser.add_argument('--visible_cuda_devices', type=str, default="0,1,2", required=False, help='model_name')
-    parser.add_argument('--batch_size', type=int, required=False, default=8, help='batch_size')
+    parser.add_argument('--batch_size', type=int, required=False, default=4, help='batch_size')
     parser.add_argument('--run_mode', type=str, required=False, default=None, help='mode of prompt')
     args = parser.parse_args()
     run(args)
