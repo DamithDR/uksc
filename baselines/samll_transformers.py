@@ -5,6 +5,7 @@ from sklearn.metrics import f1_score, classification_report
 import torch
 import argparse
 import os
+import wandb
 
 
 # Function to create and train the model
@@ -19,7 +20,23 @@ def train_binary_classifier(
         train_batch_size=8,
         eval_batch_size=8
 ):
-    # Define model arguments
+    # Initialize W&B run
+    wandb.init(
+        project="binary-classification",  # Change this to your project name
+        config={
+            "model_type": model_type,
+            "model_name": model_name,
+            "num_train_epochs": num_train_epochs,
+            "learning_rate": learning_rate,
+            "train_batch_size": train_batch_size,
+            "eval_batch_size": eval_batch_size,
+            "train_samples": len(train_data),
+            "eval_samples": len(eval_data),
+            "test_samples": len(test_data),
+        }
+    )
+
+    # Define model arguments with W&B integration
     args = {
         'num_train_epochs': num_train_epochs,
         'learning_rate': learning_rate,
@@ -29,6 +46,8 @@ def train_binary_classifier(
         'evaluate_during_training': True,
         'evaluate_during_training_verbose': True,
         'use_cuda': True if torch.cuda.is_available() else False,
+        'wandb_project': "binary-classification",  # Match this with wandb.init project
+        'wandb_kwargs': {"name": f"{model_name}_{num_train_epochs}epochs"},
     }
 
     # Initialize the model
@@ -48,6 +67,7 @@ def train_binary_classifier(
     # Evaluate on validation set during training
     val_result, _, _ = model.eval_model(eval_data)
     print("Validation results:", val_result)
+    wandb.log({"validation_mcc": val_result['mcc'], "validation_loss": val_result['eval_loss']})
 
     # Evaluate on test set
     test_predictions, test_raw_outputs = model.predict(test_data['text'].tolist())
@@ -65,7 +85,12 @@ def train_binary_classifier(
     # Print results to console
     print("\n".join(results))
 
-    # Save results to file (replace / with _ in model_name for valid filename)
+    # Log test results to W&B
+    wandb.log({"test_f1_weighted": test_f1})
+    # Optionally log the full classification report as text
+    wandb.log({"classification_report": wandb.Html("<pre>" + report + "</pre>")})
+
+    # Save results to file
     safe_model_name = model_name.replace('/', '_')
     output_file = f"{safe_model_name}_results.txt"
     with open(output_file, 'w') as f:
@@ -80,6 +105,9 @@ def train_binary_classifier(
         f.write("\n" + "\n".join(results))
 
     print(f"Results saved to {output_file}")
+
+    # Finish W&B run
+    wandb.finish()
 
     return model, test_predictions
 
