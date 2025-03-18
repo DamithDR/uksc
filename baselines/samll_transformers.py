@@ -7,6 +7,10 @@ import argparse
 import os
 import wandb
 
+# Define label mappings
+LABEL_MAP = {'dismiss': 0, 'allow': 1}
+INV_LABEL_MAP = {0: 'dismiss', 1: 'allow'}
+
 
 # Function to create and train the model
 def train_binary_classifier(
@@ -22,7 +26,7 @@ def train_binary_classifier(
 ):
     # Initialize W&B run
     wandb.init(
-        project="binary-classification",  # Change this to your project name
+        project="binary-classification",
         config={
             "model_type": model_type,
             "model_name": model_name,
@@ -46,7 +50,7 @@ def train_binary_classifier(
         'evaluate_during_training': True,
         'evaluate_during_training_verbose': True,
         'use_cuda': True if torch.cuda.is_available() else False,
-        'wandb_project': "binary-classification",  # Match this with wandb.init project
+        'wandb_project': "binary-classification",
         'wandb_kwargs': {"name": f"{model_name}_{num_train_epochs}epochs"},
     }
 
@@ -73,6 +77,10 @@ def train_binary_classifier(
     test_predictions, test_raw_outputs = model.predict(test_data['text'].tolist())
     test_f1 = f1_score(test_data['labels'], test_predictions, average='weighted')
 
+    # Map predictions back to string labels
+    test_predictions_str = [INV_LABEL_MAP[pred] for pred in test_predictions]
+    test_true_labels_str = [INV_LABEL_MAP[label] for label in test_data['labels']]
+
     # Prepare results string
     results = []
     results.append("Test Set Results:")
@@ -87,7 +95,6 @@ def train_binary_classifier(
 
     # Log test results to W&B
     wandb.log({"test_f1_weighted": test_f1})
-    # Optionally log the full classification report as text
     wandb.log({"classification_report": wandb.Html("<pre>" + report + "</pre>")})
 
     # Save results to file
@@ -103,13 +110,17 @@ def train_binary_classifier(
         f.write("\nValidation Results:\n")
         f.write(str(val_result) + "\n")
         f.write("\n" + "\n".join(results))
+        # Add mapped predictions
+        f.write("\nTest Predictions (mapped back to strings):\n")
+        for text, true_label, pred_label in zip(test_data['text'], test_true_labels_str, test_predictions_str):
+            f.write(f"Text: {text[:50]}... | True: {true_label} | Predicted: {pred_label}\n")
 
     print(f"Results saved to {output_file}")
 
     # Finish W&B run
     wandb.finish()
 
-    return model, test_predictions
+    return model, test_predictions_str  # Return string predictions
 
 
 # Load and prepare data
@@ -126,13 +137,15 @@ def load_and_prepare_data():
     historic_df = historic_df[['judgment', 'decision_label']].rename(
         columns={'judgment': 'text', 'decision_label': 'labels'}
     )
-    historic_df["labels"] = historic_df["labels"].apply(lambda x: list(map(int, x)))
+    # Map string labels to numbers
+    historic_df['labels'] = historic_df['labels'].map(LABEL_MAP)
 
     # Prepare test data
     test_df = test_df[['judgment_text', 'decision_label']].rename(
         columns={'judgment_text': 'text', 'decision_label': 'labels'}
     )
-    test_df["labels"] = test_df["labels"].apply(lambda x: list(map(int, x)))
+    # Map string labels to numbers
+    test_df['labels'] = test_df['labels'].map(LABEL_MAP)
 
     # Split historic data into train (90%) and validation (10%)
     train_df, eval_df = train_test_split(historic_df, test_size=0.1, random_state=42)
@@ -172,7 +185,7 @@ def main():
     print(f"Test samples: {len(test_df)}")
 
     # Train the model using command-line arguments
-    model, test_predictions = train_binary_classifier(
+    model, test_predictions_str = train_binary_classifier(
         model_type=args.model_type,
         model_name=args.model_name,
         train_data=train_df,
