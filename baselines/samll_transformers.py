@@ -22,7 +22,9 @@ def train_binary_classifier(
         num_train_epochs=3,
         learning_rate=2e-5,
         train_batch_size=8,
-        eval_batch_size=8
+        eval_batch_size=8,
+        use_multiprocessing=False,
+        use_multiprocessing_for_evaluation=False
 ):
     # Initialize W&B run
     wandb.init(
@@ -34,13 +36,15 @@ def train_binary_classifier(
             "learning_rate": learning_rate,
             "train_batch_size": train_batch_size,
             "eval_batch_size": eval_batch_size,
+            "use_multiprocessing": use_multiprocessing,
+            "use_multiprocessing_for_evaluation": use_multiprocessing_for_evaluation,
             "train_samples": len(train_data),
             "eval_samples": len(eval_data),
             "test_samples": len(test_data),
         }
     )
 
-    # Define model arguments with W&B integration
+    # Define model arguments with W&B integration and multiprocessing settings
     args = {
         'num_train_epochs': num_train_epochs,
         'learning_rate': learning_rate,
@@ -52,6 +56,8 @@ def train_binary_classifier(
         'use_cuda': True if torch.cuda.is_available() else False,
         'wandb_project': "binary-classification",
         'wandb_kwargs': {"name": f"{model_name}_{num_train_epochs}epochs"},
+        'use_multiprocessing': use_multiprocessing,  # Disable multiprocessing if False
+        'use_multiprocessing_for_evaluation': use_multiprocessing_for_evaluation  # Disable for evaluation
     }
 
     # Initialize the model
@@ -107,10 +113,11 @@ def train_binary_classifier(
         f.write(f"Learning Rate: {learning_rate}\n")
         f.write(f"Train Batch Size: {train_batch_size}\n")
         f.write(f"Eval Batch Size: {eval_batch_size}\n")
+        f.write(f"Use Multiprocessing: {use_multiprocessing}\n")
+        f.write(f"Use Multiprocessing for Evaluation: {use_multiprocessing_for_evaluation}\n")
         f.write("\nValidation Results:\n")
         f.write(str(val_result) + "\n")
         f.write("\n" + "\n".join(results))
-        # Add mapped predictions
         f.write("\nTest Predictions (mapped back to strings):\n")
         for text, true_label, pred_label in zip(test_data['text'], test_true_labels_str, test_predictions_str):
             f.write(f"Text: {text[:50]}... | True: {true_label} | Predicted: {pred_label}\n")
@@ -120,7 +127,7 @@ def train_binary_classifier(
     # Finish W&B run
     wandb.finish()
 
-    return model, test_predictions_str  # Return string predictions
+    return model, test_predictions_str
 
 
 # Load and prepare data
@@ -137,14 +144,12 @@ def load_and_prepare_data():
     historic_df = historic_df[['judgment', 'decision_label']].rename(
         columns={'judgment': 'text', 'decision_label': 'labels'}
     )
-    # Map string labels to numbers
     historic_df['labels'] = historic_df['labels'].map(LABEL_MAP)
 
     # Prepare test data
     test_df = test_df[['judgment_text', 'decision_label']].rename(
         columns={'judgment_text': 'text', 'decision_label': 'labels'}
     )
-    # Map string labels to numbers
     test_df['labels'] = test_df['labels'].map(LABEL_MAP)
 
     # Split historic data into train (90%) and validation (10%)
@@ -168,6 +173,10 @@ def parse_args():
                         help='Training batch size')
     parser.add_argument('--eval_batch_size', type=int, default=8,
                         help='Evaluation batch size')
+    parser.add_argument('--use_multiprocessing', type=bool, default=False,
+                        help='Use multiprocessing for training (True/False)')
+    parser.add_argument('--use_multiprocessing_for_evaluation', type=bool, default=False,
+                        help='Use multiprocessing for evaluation (True/False)')
 
     return parser.parse_args()
 
@@ -194,7 +203,9 @@ def main():
         num_train_epochs=args.num_train_epochs,
         learning_rate=args.learning_rate,
         train_batch_size=args.train_batch_size,
-        eval_batch_size=args.eval_batch_size
+        eval_batch_size=args.eval_batch_size,
+        use_multiprocessing=args.use_multiprocessing,
+        use_multiprocessing_for_evaluation=args.use_multiprocessing_for_evaluation
     )
 
 
