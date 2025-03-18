@@ -126,11 +126,13 @@ def load_and_prepare_data():
     historic_df = historic_df[['judgment', 'decision_label']].rename(
         columns={'judgment': 'text', 'decision_label': 'labels'}
     )
+    historic_df["labels"] = historic_df["labels"].apply(lambda x: list(map(int, x)))
 
     # Prepare test data
     test_df = test_df[['judgment_text', 'decision_label']].rename(
         columns={'judgment_text': 'text', 'decision_label': 'labels'}
     )
+    test_df["labels"] = test_df["labels"].apply(lambda x: list(map(int, x)))
 
     # Split historic data into train (90%) and validation (10%)
     train_df, eval_df = train_test_split(historic_df, test_size=0.1, random_state=42)
