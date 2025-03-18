@@ -56,8 +56,8 @@ def train_binary_classifier(
         'use_cuda': True if torch.cuda.is_available() else False,
         'wandb_project': "binary-classification",
         'wandb_kwargs': {"name": f"{model_name}_{num_train_epochs}epochs"},
-        'use_multiprocessing': use_multiprocessing,  # Disable multiprocessing if False
-        'use_multiprocessing_for_evaluation': use_multiprocessing_for_evaluation  # Disable for evaluation
+        'use_multiprocessing': use_multiprocessing,
+        'use_multiprocessing_for_evaluation': use_multiprocessing_for_evaluation
     }
 
     # Initialize the model
@@ -81,7 +81,9 @@ def train_binary_classifier(
 
     # Evaluate on test set
     test_predictions, test_raw_outputs = model.predict(test_data['text'].tolist())
-    test_f1 = f1_score(test_data['labels'], test_predictions, average='weighted')
+    # Calculate F1 scores for both macro and weighted averages
+    test_f1_macro = f1_score(test_data['labels'], test_predictions, average='macro')
+    test_f1_weighted = f1_score(test_data['labels'], test_predictions, average='weighted')
 
     # Map predictions back to string labels
     test_predictions_str = [INV_LABEL_MAP[pred] for pred in test_predictions]
@@ -90,7 +92,8 @@ def train_binary_classifier(
     # Prepare results string
     results = []
     results.append("Test Set Results:")
-    results.append(f"F1 Score (weighted): {test_f1:.4f}")
+    results.append(f"F1 Score (macro): {test_f1_macro:.4f}")
+    results.append(f"F1 Score (weighted): {test_f1_weighted:.4f}")
     results.append("\nDetailed Classification Report:")
     report = classification_report(test_data['labels'], test_predictions,
                                    target_names=['Dismiss', 'Allow'])
@@ -100,7 +103,7 @@ def train_binary_classifier(
     print("\n".join(results))
 
     # Log test results to W&B
-    wandb.log({"test_f1_weighted": test_f1})
+    wandb.log({"test_f1_macro": test_f1_macro, "test_f1_weighted": test_f1_weighted})
     wandb.log({"classification_report": wandb.Html("<pre>" + report + "</pre>")})
 
     # Save results to file
@@ -118,9 +121,6 @@ def train_binary_classifier(
         f.write("\nValidation Results:\n")
         f.write(str(val_result) + "\n")
         f.write("\n" + "\n".join(results))
-        f.write("\nTest Predictions (mapped back to strings):\n")
-        for text, true_label, pred_label in zip(test_data['text'], test_true_labels_str, test_predictions_str):
-            f.write(f"Text: {text[:50]}... | True: {true_label} | Predicted: {pred_label}\n")
 
     print(f"Results saved to {output_file}")
 
