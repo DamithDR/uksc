@@ -140,15 +140,23 @@ def load_and_prepare_data():
     test_path = "data/UKSC_dataset_extended.xlsx"
     test_df = pd.read_excel(test_path)
 
-    # Prepare historic data
-    historic_df = historic_df[['judgment', 'decision_label']].rename(
-        columns={'judgment': 'text', 'decision_label': 'labels'}
+    # Prepare historic data- full judgment
+    # historic_df = historic_df[['judgment', 'decision_label']].rename(
+    #     columns={'judgment': 'text', 'decision_label': 'labels'}
+    # )
+    # press summary background
+    historic_df = historic_df[['background', 'decision_label']].rename(
+        columns={'background': 'text', 'decision_label': 'labels'}
     )
     historic_df['labels'] = historic_df['labels'].map(LABEL_MAP)
 
-    # Prepare test data
-    test_df = test_df[['judgment_text', 'decision_label']].rename(
-        columns={'judgment_text': 'text', 'decision_label': 'labels'}
+    # Prepare test data - full judgment
+    # test_df = test_df[['judgment_text', 'decision_label']].rename(
+    #     columns={'judgment_text': 'text', 'decision_label': 'labels'}
+    # )
+    # press summary background
+    test_df = test_df[['background', 'decision_label']].rename(
+        columns={'background': 'text', 'decision_label': 'labels'}
     )
     test_df['labels'] = test_df['labels'].map(LABEL_MAP)
 
