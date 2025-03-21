@@ -32,6 +32,8 @@ def run(args):
     os.environ["CUDA_VISIBLE_DEVICES"] = args.visible_cuda_devices  # set the devices you need to run
     df = pd.read_excel('data/test_data.xlsx', sheet_name='data')
 
+    df = df[:5] # todo remove after testing
+
     tokenizer_mt = AutoTokenizer.from_pretrained('local_models/Meta-Llama-3.1-8B-Instruct', trust_remote_code=True)
     chat_template = get_chat_template()
     if chat_template:
