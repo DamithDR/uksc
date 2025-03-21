@@ -50,7 +50,7 @@ def run(args):
     # pipe.tokenizer.pad_token_id = pipe.tokenizer.eos_token_id
     pipe.tokenizer.padding_side = 'left'
 
-    label_classification_messages = get_messages_for_labels(df, args.run_mode)
+    label_classification_messages = get_messages_for_labels(df, args.run_mode, args.input_column)
     print(f'{args.model_name} : Generating decision labels')
     decision_outputs = pipe(
         label_classification_messages,
@@ -83,7 +83,7 @@ def run(args):
         f.write(
             f'{model_name}\t{round(w_recall, 2)}\t{round(w_precision, 2)}\t{round(w_f1, 2)}\t{round(m_f1, 2)}\n')
 
-    reasoning_messages = get_messages_for_reasoning(df, decision_labels, args.run_mode)
+    reasoning_messages = get_messages_for_reasoning(df, decision_labels, args.run_mode, args.input_column)
     print(f'{args.model_name} : Generating reasons')
     reasoning_outputs = pipe(
         reasoning_messages,
@@ -121,6 +121,7 @@ if __name__ == '__main__':
                         help='model_name')
     parser.add_argument('--visible_cuda_devices', type=str, default="0,1,2", required=False, help='model_name')
     parser.add_argument('--batch_size', type=int, required=False, default=8, help='batch_size')
+    parser.add_argument('--input_column', type=str, required=True, default='background', help='input colum')
     parser.add_argument('--run_mode', type=str, required=True, help='mode of prompt')
     args = parser.parse_args()
     run(args)
