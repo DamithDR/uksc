@@ -4,3 +4,12 @@ python -m experiments.open_llms --input_column judgment --model_name mistralai/M
 python -m experiments.open_llms --input_column judgment --model_name microsoft/Phi-3-mini-128k-instruct --visible_cuda_devices 0,1,2
 python -m experiments.open_llms --input_column judgment --model_name Equall/Saul-7B-Instruct-v1 --visible_cuda_devices 0,1,2
 python -m experiments.llama3 --input_column judgment --model_name meta-llama/Meta-Llama-3.1-8B-Instruct --visible_cuda_devices 0,1,2
+
+FOLDER="/mnt/data/dolamull/hf_cache"
+rm -r "$FOLDER"
+
+if [ $? -eq 0 ]; then
+    echo "Successfully removed $FOLDER"
+else
+    echo "Error removing $FOLDER"
+fi
