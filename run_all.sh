@@ -1,4 +1,9 @@
 #!/bin/bash
+
+export HF_HOME="/mnt/data/dolamull/hf_cache"
+
+echo "Hugging Face cache directory set to: $HF_HOME"
+
 python -m experiments.open_llms --input_column judgment --model_name meta-llama/Llama-2-7b-chat-hf --visible_cuda_devices 0,1,2
 python -m experiments.open_llms --input_column judgment --model_name mistralai/Mistral-7B-Instruct-v0.3 --visible_cuda_devices 0,1,2
 python -m experiments.open_llms --input_column judgment --model_name microsoft/Phi-3-mini-128k-instruct --visible_cuda_devices 0,1,2
