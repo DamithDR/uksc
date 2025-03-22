@@ -32,8 +32,6 @@ def run(args):
     os.environ["CUDA_VISIBLE_DEVICES"] = args.visible_cuda_devices  # set the devices you need to run
     df = pd.read_excel('data/test_data.xlsx', sheet_name='data')
 
-    df = df[:5] # todo remove after testing
-
     tokenizer_mt = AutoTokenizer.from_pretrained('local_models/Meta-Llama-3.1-8B-Instruct', trust_remote_code=True)
     chat_template = get_chat_template()
     if chat_template:
@@ -73,7 +71,7 @@ def run(args):
     decisions_df['predictions'] = decision_labels
 
     if not os.path.exists(f"outputs/decisions_{args.run_mode}.xlsx"):
-        decisions_df.to_excel(f"outputs/decisions{args.run_mode}.xlsx", sheet_name=f"{model_name}", index=False)
+        decisions_df.to_excel(f"outputs/decisions_{args.run_mode}.xlsx", sheet_name=f"{model_name}", index=False)
     else:
         with pd.ExcelWriter(f'outputs/decisions_{args.run_mode}.xlsx', mode='a', engine='openpyxl',
                             if_sheet_exists='replace') as writer:
