@@ -124,6 +124,6 @@ if __name__ == '__main__':
     parser.add_argument('--visible_cuda_devices', type=str, default="0,1,2", required=False, help='model_name')
     parser.add_argument('--batch_size', type=int, required=False, default=8, help='batch_size')
     parser.add_argument('--input_column', type=str, required=True, default='background', help='input colum')
-    parser.add_argument('--run_mode', type=str, required=True, help='mode of prompt')
+    parser.add_argument('--run_mode', type=str, required=False, help='mode of prompt')
     args = parser.parse_args()
     run(args)
