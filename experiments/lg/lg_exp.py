@@ -53,6 +53,9 @@ class HuggingFaceLLM:
         decoded_outputs = [self.tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
         return [{"text": output[len(prompt):].strip()} for prompt, output in zip(prompts, decoded_outputs)]
 
+    def generate(self, prompts: List[str]) -> List[dict]:
+        return asyncio.run(self.agenerate(prompts))
+
 
 # Function to chunk text based on token count using the model's tokenizer
 def chunk_text_by_tokens(text: str, max_tokens: int, tokenizer) -> List[str]:
@@ -76,14 +79,14 @@ def chunk_text_by_tokens(text: str, max_tokens: int, tokenizer) -> List[str]:
     return chunks
 
 
-# Process a single chunk of text
-async def process_chunk(state: JudgmentState, llm: HuggingFaceLLM) -> JudgmentState:
+# Process a single chunk of text (synchronous)
+def process_chunk(state: JudgmentState, llm: HuggingFaceLLM) -> JudgmentState:
     chunk = state["chunks"][state["current_chunk_idx"]]
     prompt = PromptTemplate(
         input_variables=["chunk", "current_summary"],
         template="Given the following chunk of a legal judgment: '{chunk}', and the current summary of previous chunks: '{current_summary}', provide a concise summary of this chunk and integrate it into the overall summary."
     )
-    response = await llm.agenerate(
+    response = llm.generate(
         [prompt.format(chunk=chunk, current_summary=state["full_text_summary"] or "No summary yet.")])
     chunk_summary = response[0]["text"]
     state["chunks_processed"].append(chunk_summary)
@@ -92,20 +95,20 @@ async def process_chunk(state: JudgmentState, llm: HuggingFaceLLM) -> JudgmentSt
     return state
 
 
-# Predict judgment based on the full summary
-async def predict_judgment(state: JudgmentState, llm: HuggingFaceLLM) -> JudgmentState:
+# Predict judgment based on the full summary (synchronous)
+def predict_judgment(state: JudgmentState, llm: HuggingFaceLLM) -> JudgmentState:
     prompt = PromptTemplate(
         input_variables=["summary"],
         template="Based on the following summary of a legal judgment: '{summary}', predict the outcome as either 'allow' or 'dismiss'. Provide a single-word answer."
     )
-    response = await llm.agenerate([prompt.format(summary=state["full_text_summary"])])
+    response = llm.generate([prompt.format(summary=state["full_text_summary"])])
     prediction = response[0]["text"].lower()
     state["judgment_prediction"] = "allow" if prediction == "allow" else "dismiss"
     return state
 
 
 # Main function to set up and run the graph for a single text
-async def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: int = 1000):
+def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: int = 1000):
     # Initialize the state with chunks as a list
     chunks = chunk_text_by_tokens(judgment_text, max_tokens, llm.tokenizer)
     initial_state: JudgmentState = {
@@ -131,7 +134,7 @@ async def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_to
     workflow.add_edge("predict_judgment", END)
 
     app = workflow.compile()
-    final_state = await app.ainvoke(initial_state)
+    final_state = app.invoke(initial_state)
     return final_state["judgment_prediction"]
 
 
@@ -166,7 +169,7 @@ def save_results(model_name: str, metrics: dict, predictions: List[str], true_la
 
 
 # Process dataset in batches
-async def process_in_batches(dataset: JudgmentDataset, llm: HuggingFaceLLM, max_tokens: int, batch_size: int):
+def process_in_batches(dataset: JudgmentDataset, llm: HuggingFaceLLM, max_tokens: int, batch_size: int):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     predictions = []
     true_labels = []
@@ -174,7 +177,7 @@ async def process_in_batches(dataset: JudgmentDataset, llm: HuggingFaceLLM, max_
     for batch_texts, batch_labels in dataloader:
         batch_predictions = []
         for text in batch_texts:
-            prediction = await run_judgment_predictor(text, llm, max_tokens)
+            prediction = run_judgment_predictor(text, llm, max_tokens)
             batch_predictions.append(prediction)
         predictions.extend(batch_predictions)
         true_labels.extend(batch_labels)
@@ -184,7 +187,7 @@ async def process_in_batches(dataset: JudgmentDataset, llm: HuggingFaceLLM, max_
 
 
 # Main function
-async def main():
+def main():
     parser = argparse.ArgumentParser(description="Legal Judgment Predictor")
     parser.add_argument("--model", type=str, required=True,
                         help="Hugging Face model name (e.g., 'mistralai/Mistral-7B-Instruct-v0.3')")
@@ -210,7 +213,7 @@ async def main():
     batch_size = config["batch_size"]
 
     # Process in batches
-    predictions, true_labels = await process_in_batches(dataset, llm, max_tokens, batch_size)
+    predictions, true_labels = process_in_batches(dataset, llm, max_tokens, batch_size)
 
     # Compute and save metrics
     metrics = compute_metrics(true_labels, predictions)
@@ -218,10 +221,5 @@ async def main():
 
 
 # Run the script
-import platform
-
-if platform.system() == "Emscripten":
-    asyncio.ensure_future(main())
-else:
-    if __name__ == "__main__":
-        asyncio.run(main())
+if __name__ == "__main__":
+    main()
