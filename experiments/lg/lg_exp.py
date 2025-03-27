@@ -16,6 +16,8 @@ class JudgmentState(TypedDict):
     chunks_processed: List[str]  # Processed summaries of each chunk
     full_text_summary: str  # Running summary of the entire text
     judgment_prediction: Optional[str]  # Final prediction (allow/dismiss)
+    chunks: List[str]  # List of chunks to process
+    current_chunk_idx: int  # Index of the current chunk being processed
 
 
 # Custom dataset for batching
@@ -75,7 +77,8 @@ def chunk_text_by_tokens(text: str, max_tokens: int, tokenizer) -> List[str]:
 
 
 # Process a single chunk of text
-async def process_chunk(state: JudgmentState, chunk: str, llm: HuggingFaceLLM) -> JudgmentState:
+async def process_chunk(state: JudgmentState, llm: HuggingFaceLLM) -> JudgmentState:
+    chunk = state["chunks"][state["current_chunk_idx"]]
     prompt = PromptTemplate(
         input_variables=["chunk", "current_summary"],
         template="Given the following chunk of a legal judgment: '{chunk}', and the current summary of previous chunks: '{current_summary}', provide a concise summary of this chunk and integrate it into the overall summary."
@@ -85,6 +88,7 @@ async def process_chunk(state: JudgmentState, chunk: str, llm: HuggingFaceLLM) -
     chunk_summary = response[0]["text"]
     state["chunks_processed"].append(chunk_summary)
     state["full_text_summary"] = chunk_summary  # Update running summary
+    state["current_chunk_idx"] += 1  # Move to the next chunk
     return state
 
 
@@ -102,26 +106,26 @@ async def predict_judgment(state: JudgmentState, llm: HuggingFaceLLM) -> Judgmen
 
 # Main function to set up and run the graph for a single text
 async def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: int = 1000):
+    # Initialize the state with chunks as a list
+    chunks = chunk_text_by_tokens(judgment_text, max_tokens, llm.tokenizer)
     initial_state: JudgmentState = {
         "chunks_processed": [],
         "full_text_summary": "",
-        "judgment_prediction": None
+        "judgment_prediction": None,
+        "chunks": chunks,
+        "current_chunk_idx": 0
     }
 
     workflow = StateGraph(JudgmentState)
-    workflow.add_node("process_chunk", lambda state: process_chunk(state, next(state["chunks"]), llm))
+    workflow.add_node("process_chunk", lambda state: process_chunk(state, llm))
     workflow.add_node("predict_judgment", lambda state: predict_judgment(state, llm))
 
     workflow.set_entry_point("process_chunk")
-    chunks = chunk_text_by_tokens(judgment_text, max_tokens, llm.tokenizer)
-    initial_state["chunks"] = iter(chunks)
 
     def should_continue(state):
-        try:
-            next(state["chunks"])
+        if state["current_chunk_idx"] < len(state["chunks"]):
             return "process_chunk"
-        except StopIteration:
-            return "predict_judgment"
+        return "predict_judgment"
 
     workflow.add_conditional_edges("process_chunk", should_continue)
     workflow.add_edge("predict_judgment", END)
@@ -134,7 +138,6 @@ async def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_to
 # Load judgment text and ground truth from Excel file
 def load_dataset(file_path: str = "data/UKSC_dataset_extended.xlsx") -> pd.DataFrame:
     df = pd.read_excel(file_path)
-    df = df[:10] # todo remove after testing
     if "judgment_text" not in df.columns or "decision_label" not in df.columns:
         raise ValueError("Excel file must contain 'judgment_text' and 'decision_label' columns.")
     return df[["judgment_text", "decision_label"]].dropna()
