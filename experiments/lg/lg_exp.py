@@ -37,6 +37,8 @@ class JudgmentDataset(Dataset):
 class HuggingFaceLLM:
     def __init__(self, model_name: str):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.tokenizer.padding_side = 'left'
         self.model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         # Wrap model with DataParallel for multi-GPU
