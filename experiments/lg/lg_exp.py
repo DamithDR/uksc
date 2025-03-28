@@ -50,8 +50,10 @@ class HuggingFaceLLM:
     async def agenerate(self, prompts: List[str]) -> List[dict]:
         inputs = self.tokenizer(prompts, return_tensors="pt", padding=True, truncation=True).to(self.device)
         with torch.no_grad():
-            outputs = self.model.module.generate(**inputs, max_new_tokens=100, do_sample=False) if isinstance(
-                self.model, nn.DataParallel) else self.model.generate(**inputs, max_new_tokens=100, do_sample=False)
+            outputs = self.model.module.generate(**inputs, max_new_tokens=2048, num_return_sequences=1,
+                                                 do_sample=True) if isinstance(
+                self.model, nn.DataParallel) else self.model.generate(**inputs, max_new_tokens=2048,
+                                                                      num_return_sequences=1, do_sample=True)
         decoded_outputs = [self.tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
         return [{"text": output[len(prompt):].strip()} for prompt, output in zip(prompts, decoded_outputs)]
 
@@ -143,6 +145,7 @@ def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: 
 # Load judgment text and ground truth from Excel file
 def load_dataset(file_path: str = "data/UKSC_dataset_extended.xlsx") -> pd.DataFrame:
     df = pd.read_excel(file_path)
+    df = df[:8]
     if "judgment_text" not in df.columns or "decision_label" not in df.columns:
         raise ValueError("Excel file must contain 'judgment_text' and 'decision_label' columns.")
     return df[["judgment_text", "decision_label"]].dropna()
