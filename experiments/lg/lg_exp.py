@@ -110,6 +110,7 @@ def predict_judgment(state: JudgmentState, llm: HuggingFaceLLM) -> JudgmentState
     response = llm.generate([prompt.format(summary=state["full_text_summary"])])
     prediction = response[0]["text"].lower()
     state["judgment_prediction"] = "allow" if prediction == "allow" else "dismiss"
+    print(prediction)
     return state
 
 
