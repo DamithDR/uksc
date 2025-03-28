@@ -3,6 +3,8 @@ from langchain_core.prompts import PromptTemplate
 from typing import TypedDict, List, Optional
 import asyncio
 import argparse
+
+from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 import torch.nn as nn
@@ -179,7 +181,7 @@ def process_in_batches(dataset: JudgmentDataset, llm: HuggingFaceLLM, max_tokens
     predictions = []
     true_labels = []
 
-    for batch_texts, batch_labels in dataloader:
+    for batch_texts, batch_labels in tqdm(dataloader):
         batch_predictions = []
         for text in batch_texts:
             prediction = run_judgment_predictor(text, llm, max_tokens)
