@@ -97,6 +97,7 @@ def process_chunk(state: JudgmentState, llm: HuggingFaceLLM) -> JudgmentState:
     chunk_summary = response[0]["text"]
 
     print(chunk_summary)
+    print('========================================')
     state["chunks_processed"].append(chunk_summary)
     state["full_text_summary"] = chunk_summary  # Update running summary
     state["current_chunk_idx"] += 1  # Move to the next chunk
