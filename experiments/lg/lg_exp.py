@@ -53,8 +53,8 @@ class HuggingFaceLLM:
         inputs = self.tokenizer(prompts, return_tensors="pt", padding=True, truncation=True, max_length=max_length).to(
             self.device)
         with torch.no_grad():
-            outputs = self.model.module.generate(**inputs, max_new_tokens=100, do_sample=False) if isinstance(
-                self.model, nn.DataParallel) else self.model.generate(**inputs, max_new_tokens=100, do_sample=False)
+            outputs = self.model.module.generate(**inputs, max_new_tokens=2048, do_sample=True) if isinstance(
+                self.model, nn.DataParallel) else self.model.generate(**inputs, max_new_tokens=2048, do_sample=True)
         decoded_outputs = [self.tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
         return [{"text": output[len(prompt):].strip()} for prompt, output in zip(prompts, decoded_outputs)]
 
