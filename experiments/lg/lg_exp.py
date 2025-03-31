@@ -187,8 +187,14 @@ def save_outputs(model_name: str, predictions: List[str], summaries: List[str], 
 
     # Check if the file exists to determine the mode (write or append)
     mode = 'w' if not os.path.exists(output_file) else 'a'
-    with pd.ExcelWriter(output_file, engine='openpyxl', mode=mode, if_sheet_exists='replace') as writer:
-        df.to_excel(writer, sheet_name=safe_model_name, index=False)
+    # with pd.ExcelWriter(output_file, engine='openpyxl', mode=mode, if_sheet_exists='replace') as writer:
+    #     df.to_excel(writer, sheet_name=safe_model_name, index=False)
+    #
+    if not os.path.exists(output_file):
+        df.to_excel(output_file, sheet_name=safe_model_name, index=False)
+    else:
+        with pd.ExcelWriter(output_file, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+            df.to_excel(writer, sheet_name=safe_model_name, index=False)
     print(f"Outputs for {model_name} saved to {output_file} in sheet {safe_model_name}")
 
 
