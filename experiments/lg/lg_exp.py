@@ -1,16 +1,16 @@
-from langgraph.graph import StateGraph, END
-from langchain_core.prompts import PromptTemplate
-from typing import TypedDict, List, Optional
-import asyncio
 import argparse
+import asyncio
+import os
+from typing import TypedDict, List, Optional, Tuple
 
-from tqdm import tqdm
-from transformers import AutoTokenizer, AutoModelForCausalLM
+import pandas as pd
 import torch
 import torch.nn as nn
-import pandas as pd
+from langchain_core.prompts import PromptTemplate
+from langgraph.graph import StateGraph, END
 from sklearn.metrics import accuracy_score, recall_score, f1_score
 from torch.utils.data import Dataset, DataLoader
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
 # Define the state structure to hold accumulated information
@@ -49,18 +49,17 @@ class HuggingFaceLLM:
         self.model.to(self.device)
         self.model.eval()
 
-    async def agenerate(self, prompts: List[str]) -> List[dict]:
-        inputs = self.tokenizer(prompts, return_tensors="pt", padding=True, truncation=True).to(self.device)
+    async def agenerate(self, prompts: List[str], max_length: int) -> List[dict]:
+        inputs = self.tokenizer(prompts, return_tensors="pt", padding=True, truncation=True, max_length=max_length).to(
+            self.device)
         with torch.no_grad():
-            outputs = self.model.module.generate(**inputs, max_new_tokens=2048, num_return_sequences=1,
-                                                 do_sample=True) if isinstance(
-                self.model, nn.DataParallel) else self.model.generate(**inputs, max_new_tokens=2048,
-                                                                      num_return_sequences=1, do_sample=True)
+            outputs = self.model.module.generate(**inputs, max_new_tokens=100, do_sample=False) if isinstance(
+                self.model, nn.DataParallel) else self.model.generate(**inputs, max_new_tokens=100, do_sample=False)
         decoded_outputs = [self.tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
         return [{"text": output[len(prompt):].strip()} for prompt, output in zip(prompts, decoded_outputs)]
 
-    def generate(self, prompts: List[str]) -> List[dict]:
-        return asyncio.run(self.agenerate(prompts))
+    def generate(self, prompts: List[str], max_length: int) -> List[dict]:
+        return asyncio.run(self.agenerate(prompts, max_length))
 
 
 # Function to chunk text based on token count using the model's tokenizer
@@ -86,18 +85,15 @@ def chunk_text_by_tokens(text: str, max_tokens: int, tokenizer) -> List[str]:
 
 
 # Process a single chunk of text (synchronous)
-def process_chunk(state: JudgmentState, llm: HuggingFaceLLM) -> JudgmentState:
+def process_chunk(state: JudgmentState, llm: HuggingFaceLLM, max_length: int) -> JudgmentState:
     chunk = state["chunks"][state["current_chunk_idx"]]
     prompt = PromptTemplate(
         input_variables=["chunk", "current_summary"],
-        template="Given the following chunk of a legal judgment: '{chunk}', and the current summary of previous chunks: '{current_summary}', provide a concise summary of this chunk and integrate it into the overall summary. Make sure you capture all the important points of the chunks. The summary should include more than 250 words."
+        template="Given the following chunk of a legal judgment: '{chunk}', and the current summary of previous chunks: '{current_summary}', provide a concise summary of this chunk and integrate it into the overall summary."
     )
     response = llm.generate(
-        [prompt.format(chunk=chunk, current_summary=state["full_text_summary"] or "No summary yet.")])
+        [prompt.format(chunk=chunk, current_summary=state["full_text_summary"] or "No summary yet.")], max_length)
     chunk_summary = response[0]["text"]
-
-    print(chunk_summary)
-    print('========================================')
     state["chunks_processed"].append(chunk_summary)
     state["full_text_summary"] = chunk_summary  # Update running summary
     state["current_chunk_idx"] += 1  # Move to the next chunk
@@ -105,20 +101,19 @@ def process_chunk(state: JudgmentState, llm: HuggingFaceLLM) -> JudgmentState:
 
 
 # Predict judgment based on the full summary (synchronous)
-def predict_judgment(state: JudgmentState, llm: HuggingFaceLLM) -> JudgmentState:
+def predict_judgment(state: JudgmentState, llm: HuggingFaceLLM, max_length: int) -> JudgmentState:
     prompt = PromptTemplate(
         input_variables=["summary"],
         template="Based on the following summary of a legal judgment: '{summary}', predict the outcome as either 'allow' or 'dismiss'. Provide a single-word answer."
     )
-    response = llm.generate([prompt.format(summary=state["full_text_summary"])])
+    response = llm.generate([prompt.format(summary=state["full_text_summary"])], max_length)
     prediction = response[0]["text"].lower()
     state["judgment_prediction"] = "allow" if prediction == "allow" else "dismiss"
-    print(prediction)
     return state
 
 
 # Main function to set up and run the graph for a single text
-def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: int = 1000):
+def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: int = 2048) -> Tuple[str, str]:
     # Initialize the state with chunks as a list
     chunks = chunk_text_by_tokens(judgment_text, max_tokens, llm.tokenizer)
     initial_state: JudgmentState = {
@@ -130,8 +125,8 @@ def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: 
     }
 
     workflow = StateGraph(JudgmentState)
-    workflow.add_node("process_chunk", lambda state: process_chunk(state, llm))
-    workflow.add_node("predict_judgment", lambda state: predict_judgment(state, llm))
+    workflow.add_node("process_chunk", lambda state: process_chunk(state, llm, max_tokens))
+    workflow.add_node("predict_judgment", lambda state: predict_judgment(state, llm, max_tokens))
 
     workflow.set_entry_point("process_chunk")
 
@@ -145,7 +140,7 @@ def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: 
 
     app = workflow.compile()
     final_state = app.invoke(initial_state)
-    return final_state["judgment_prediction"]
+    return final_state["judgment_prediction"], final_state["full_text_summary"]
 
 
 # Load judgment text and ground truth from Excel file
@@ -179,22 +174,44 @@ def save_results(model_name: str, metrics: dict, predictions: List[str], true_la
     print(f"Results saved to {file_name}")
 
 
+# Save predictions and summaries to an Excel file
+def save_outputs(model_name: str, predictions: List[str], summaries: List[str], true_labels: List[str]):
+    safe_model_name = model_name.replace("/", "_")
+    output_file = "model_outputs.xlsx"
+    df = pd.DataFrame({
+        "Prediction": predictions,
+        "Full_Summary": summaries,
+        "True_Label": true_labels
+    })
+
+    # Check if the file exists to determine the mode (write or append)
+    mode = 'w' if not os.path.exists(output_file) else 'a'
+    with pd.ExcelWriter(output_file, engine='openpyxl', mode=mode, if_sheet_exists='replace') as writer:
+        df.to_excel(writer, sheet_name=safe_model_name, index=False)
+    print(f"Outputs for {model_name} saved to {output_file} in sheet {safe_model_name}")
+
+
+
 # Process dataset in batches
 def process_in_batches(dataset: JudgmentDataset, llm: HuggingFaceLLM, max_tokens: int, batch_size: int):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     predictions = []
+    summaries = []
     true_labels = []
 
-    for batch_texts, batch_labels in tqdm(dataloader):
+    for batch_texts, batch_labels in dataloader:
         batch_predictions = []
+        batch_summaries = []
         for text in batch_texts:
-            prediction = run_judgment_predictor(text, llm, max_tokens)
+            prediction, summary = run_judgment_predictor(text, llm, max_tokens)
             batch_predictions.append(prediction)
+            batch_summaries.append(summary)
         predictions.extend(batch_predictions)
+        summaries.extend(batch_summaries)
         true_labels.extend(batch_labels)
         print(f"Processed batch: {len(batch_predictions)} samples")
 
-    return predictions, true_labels
+    return predictions, summaries, true_labels
 
 
 # Main function
@@ -211,20 +228,23 @@ def main():
                               df["decision_label"].astype(str).str.lower().tolist())
     llm = HuggingFaceLLM(args.model)
 
-    # Context lengths and batch sizes for specified models (batch size capped at 8)
+    # Context lengths and batch sizes for specified models
     model_configs = {
-        "meta-llama/Llama-2-7b-chat-hf": {"context_length": 4096, "batch_size": 8},
-        "mistralai/Mistral-7B-Instruct-v0.3": {"context_length": 32768, "batch_size": 8},
-        "microsoft/Phi-3-mini-128k-instruct": {"context_length": 128000, "batch_size": 8},
-        "Equall/Saul-7B-Instruct-v1": {"context_length": 32768, "batch_size": 8},
-        "meta-llama/Meta-Llama-3.1-8B-Instruct": {"context_length": 128000, "batch_size": 8}
+        "meta-llama/Llama-2-7b-chat-hf": {"context_length": 4096, "batch_size": 12},
+        "mistralai/Mistral-7B-Instruct-v0.3": {"context_length": 32768, "batch_size": 12},
+        "microsoft/Phi-3-mini-128k-instruct": {"context_length": 128000, "batch_size": 18},
+        "Equall/Saul-7B-Instruct-v1": {"context_length": 32768, "batch_size": 12},
+        "meta-llama/Meta-Llama-3.1-8B-Instruct": {"context_length": 128000, "batch_size": 9}
     }
-    config = model_configs.get(args.model, {"context_length": 4096, "batch_size": 8})
+    config = model_configs.get(args.model, {"context_length": 4096, "batch_size": 12})
     max_tokens = min(args.max_tokens, config["context_length"] // 4)
     batch_size = config["batch_size"]
 
     # Process in batches
-    predictions, true_labels = process_in_batches(dataset, llm, max_tokens, batch_size)
+    predictions, summaries, true_labels = process_in_batches(dataset, llm, max_tokens, batch_size)
+
+    # Save predictions and summaries to Excel
+    save_outputs(args.model, predictions, summaries, predictions)
 
     # Compute and save metrics
     metrics = compute_metrics(true_labels, predictions)
