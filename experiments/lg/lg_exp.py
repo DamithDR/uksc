@@ -88,10 +88,17 @@ def chunk_text_by_tokens(text: str, max_tokens: int, tokenizer) -> List[str]:
 # Process a single chunk of text (synchronous)
 def process_chunk(state: JudgmentState, llm: HuggingFaceLLM, max_length: int) -> JudgmentState:
     chunk = state["chunks"][state["current_chunk_idx"]]
+
+    is_final = state['current_chunk_idx'] == len(state['chunks']) - 1
+
     prompt = PromptTemplate(
         input_variables=["chunk", "current_summary"],
-        template="Given the following chunk of a legal judgment: '{chunk}', and the current summary of previous chunks: '{current_summary}', provide a concise summary of this chunk and integrate it into the overall summary."
+        template="Given the following chunk of a legal judgment: '{chunk}', and the current summary of all previous chunks: "
+                 "'{current_summary}', provide a concise summary of this chunk and then generate an overall summary for all the chunks given upto now."
+        if is_final else "Given the final chunk of this legal judgment: '{chunk}', and the current summary of all previous chunks: "
+                 "'{current_summary}', provide a concise summary of this last chunk and use that to provide a final summary of the whole judgment."
     )
+
     response = llm.generate(
         [prompt.format(chunk=chunk, current_summary=state["full_text_summary"] or "No summary yet.")], max_length)
     chunk_summary = response[0]["text"]
@@ -103,9 +110,16 @@ def process_chunk(state: JudgmentState, llm: HuggingFaceLLM, max_length: int) ->
 
 # Predict judgment based on the full summary (synchronous)
 def predict_judgment(state: JudgmentState, llm: HuggingFaceLLM, max_length: int) -> JudgmentState:
+
     prompt = PromptTemplate(
         input_variables=["summary"],
-        template="Based on the following summary of a legal judgment: '{summary}', predict the outcome as either 'allow' or 'dismiss'. Provide a single-word answer."
+        # template="Based on the following summary of a legal judgment: '{summary}', predict the outcome as either "
+        #          "'allow' or 'dismiss'. Provide a single-word answer.",
+        template = """Assume you are a judge at the supreme court in United Kingdom. 
+                    You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision label. 
+                    Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss].
+                    Following is the summary of the judgment, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss.
+                    Summary : {summary}"""
     )
     response = llm.generate([prompt.format(summary=state["full_text_summary"])], max_length)
     prediction = response[0]["text"].lower()
