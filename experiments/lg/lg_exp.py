@@ -90,7 +90,7 @@ def process_chunk(state: JudgmentState, llm: HuggingFaceLLM) -> JudgmentState:
     chunk = state["chunks"][state["current_chunk_idx"]]
     prompt = PromptTemplate(
         input_variables=["chunk", "current_summary"],
-        template="Given the following chunk of a legal judgment: '{chunk}', and the current summary of previous chunks: '{current_summary}', provide a concise summary of this chunk and integrate it into the overall summary."
+        template="Given the following chunk of a legal judgment: '{chunk}', and the current summary of previous chunks: '{current_summary}', provide a concise summary of this chunk and integrate it into the overall summary. The summary should include at least 250 words."
     )
     response = llm.generate(
         [prompt.format(chunk=chunk, current_summary=state["full_text_summary"] or "No summary yet.")])
