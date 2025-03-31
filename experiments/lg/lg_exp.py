@@ -10,6 +10,7 @@ from langchain_core.prompts import PromptTemplate
 from langgraph.graph import StateGraph, END
 from sklearn.metrics import accuracy_score, recall_score, f1_score
 from torch.utils.data import Dataset, DataLoader
+from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
@@ -191,7 +192,6 @@ def save_outputs(model_name: str, predictions: List[str], summaries: List[str], 
     print(f"Outputs for {model_name} saved to {output_file} in sheet {safe_model_name}")
 
 
-
 # Process dataset in batches
 def process_in_batches(dataset: JudgmentDataset, llm: HuggingFaceLLM, max_tokens: int, batch_size: int):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
@@ -199,7 +199,7 @@ def process_in_batches(dataset: JudgmentDataset, llm: HuggingFaceLLM, max_tokens
     summaries = []
     true_labels = []
 
-    for batch_texts, batch_labels in dataloader:
+    for batch_texts, batch_labels in tqdm(dataloader):
         batch_predictions = []
         batch_summaries = []
         for text in batch_texts:
