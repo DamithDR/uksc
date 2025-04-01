@@ -59,6 +59,16 @@ def get_messages_for_reasoning(df, decision_labels, run_mode=None, input_column=
              "content": f"Now generate the reason behind your decision. {mode_string} Do not need to mention your decision label again. Carefully consider the case background and your decided label and only output the reasoning behind your decision."}
         ]
         reasoning_messages.append(messages)
+
+
+        message = """
+        Assume you are a judge at the supreme court in United Kingdom. 
+        You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision label.
+        Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]
+        Judgment label: {decision_label}
+        Now generate the reason behind the decision given the summary of the judgment: {summary}
+        Do not need to mention your decision label again. Carefully consider the case background and your decided label and only output the reasoning behind your decision.
+        """
     return reasoning_messages
 
 
