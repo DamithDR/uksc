@@ -42,7 +42,7 @@ class HuggingFaceLLM:
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.tokenizer.padding_side = 'left'
-        self.model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
+        self.model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         # Wrap model with DataParallel for multi-GPU
         if torch.cuda.device_count() > 1:
@@ -96,7 +96,7 @@ def process_chunk(state: JudgmentState, llm: HuggingFaceLLM, max_length: int) ->
         template="Given the following chunk of a legal judgment: '{chunk}', and the current summary of all previous chunks: "
                  "'{current_summary}', provide a concise summary of this chunk and then generate an overall summary for all the chunks given upto now."
         if is_final else "Given the final chunk of this legal judgment: '{chunk}', and the current summary of all previous chunks: "
-                 "'{current_summary}', provide a concise summary of this last chunk and use that to provide a final summary of the whole judgment."
+                         "'{current_summary}', provide a concise summary of this last chunk and use that to provide a final summary of the whole judgment."
     )
 
     response = llm.generate(
@@ -110,12 +110,11 @@ def process_chunk(state: JudgmentState, llm: HuggingFaceLLM, max_length: int) ->
 
 # Predict judgment based on the full summary (synchronous)
 def predict_judgment(state: JudgmentState, llm: HuggingFaceLLM, max_length: int) -> JudgmentState:
-
     prompt = PromptTemplate(
         input_variables=["summary"],
         # template="Based on the following summary of a legal judgment: '{summary}', predict the outcome as either "
         #          "'allow' or 'dismiss'. Provide a single-word answer.",
-        template = """Assume you are a judge at the supreme court in United Kingdom. 
+        template="""Assume you are a judge at the supreme court in United Kingdom. 
                     You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision label. 
                     Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss].
                     Following is the summary of the judgment, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss.
