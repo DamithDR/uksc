@@ -161,7 +161,6 @@ def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: 
 # Load judgment text and ground truth from Excel file
 def load_dataset(file_path: str = "data/UKSC_dataset_extended.xlsx") -> pd.DataFrame:
     df = pd.read_excel(file_path)
-    df = df[:8]
     if "judgment_text" not in df.columns or "decision_label" not in df.columns:
         raise ValueError("Excel file must contain 'judgment_text' and 'decision_label' columns.")
     return df[["judgment_text", "decision_label"]].dropna()
