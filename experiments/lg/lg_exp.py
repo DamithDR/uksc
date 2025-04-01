@@ -42,7 +42,7 @@ class HuggingFaceLLM:
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.tokenizer.padding_side = 'left'
-        self.model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
+        self.model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         # Wrap model with DataParallel for multi-GPU
         if torch.cuda.device_count() > 1:
