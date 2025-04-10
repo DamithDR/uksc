@@ -6,7 +6,7 @@ import torch
 from tqdm import tqdm
 from transformers import pipeline, AutoTokenizer
 
-from experiments.open_llms_extended import get_messages_for_labels, get_messages_for_reasoning
+from experiments.open_llms_rag import get_messages_for_labels, get_messages_for_reasoning
 from util.eval import eval_decisions
 
 

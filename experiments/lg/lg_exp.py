@@ -91,16 +91,26 @@ def process_chunk(state: JudgmentState, llm: HuggingFaceLLM, max_length: int) ->
 
     is_final = state['current_chunk_idx'] == len(state['chunks']) - 1
 
+    # prompt = PromptTemplate(
+    #     input_variables=["chunk", "current_summary"],
+    #     template="Given the following chunk of a legal judgment: '{chunk}', and the current summary of all previous chunks: "
+    #              "'{current_summary}', provide a concise summary of this chunk and then generate an overall summary for all the chunks given upto now."
+    #     if is_final else "Given the final chunk of this legal judgment: '{chunk}', and the current summary of all previous chunks: "
+    #                      "'{current_summary}', provide a concise summary of this last chunk and use that to provide a final summary of the whole judgment."
+    # )
+
     prompt = PromptTemplate(
-        input_variables=["chunk", "current_summary"],
-        template="Given the following chunk of a legal judgment: '{chunk}', and the current summary of all previous chunks: "
-                 "'{current_summary}', provide a concise summary of this chunk and then generate an overall summary for all the chunks given upto now."
-        if is_final else "Given the final chunk of this legal judgment: '{chunk}', and the current summary of all previous chunks: "
-                         "'{current_summary}', provide a concise summary of this last chunk and use that to provide a final summary of the whole judgment."
+        input_variables=["chunk", "current_key_points"],
+        template="Given the following chunk of a legal judgment: '{chunk}', and the current list of key points from all previous chunks: "
+                 "'{current_key_points}', identify the most important points in this chunk and provide them as a concise list. Then, append these points to the existing list to create an updated list of key points for all chunks processed so far."
+        if not is_final else "Given the final chunk of this legal judgment: '{chunk}', and the current list of key points from all previous chunks: "
+                             "'{current_key_points}', identify the most important points in this last chunk as a concise list. Then, append these points to the existing list to provide a final, comprehensive list of key points for the entire judgment."
     )
 
+    # response = llm.generate(
+    #     [prompt.format(chunk=chunk, current_summary=state["full_text_summary"] or "No summary yet.")], max_length)
     response = llm.generate(
-        [prompt.format(chunk=chunk, current_summary=state["full_text_summary"] or "No summary yet.")], max_length)
+        [prompt.format(chunk=chunk, current_key_points=state["full_text_summary"] or "No summary yet.")], max_length)
     chunk_summary = response[0]["text"]
     state["chunks_processed"].append(chunk_summary)
     state["full_text_summary"] = chunk_summary  # Update running summary
@@ -160,6 +170,8 @@ def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: 
 # Load judgment text and ground truth from Excel file
 def load_dataset(file_path: str = "data/UKSC_dataset_extended.xlsx") -> pd.DataFrame:
     df = pd.read_excel(file_path)
+
+    df = df[:8]
     if "judgment_text" not in df.columns or "decision_label" not in df.columns:
         raise ValueError("Excel file must contain 'judgment_text' and 'decision_label' columns.")
     return df[["judgment_text", "decision_label"]].dropna()
