@@ -48,7 +48,7 @@ class HuggingFaceLLM:
         return chat_template
 
     def generate(self, prompts: List[str], max_length: int) -> List[dict]:
-
+        print(prompts)
         outputs = self.pipe(
             prompts,
             max_new_tokens=2048,
