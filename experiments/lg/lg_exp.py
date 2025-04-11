@@ -1,66 +1,17 @@
 import argparse
-import asyncio
 import os
-from typing import TypedDict, List, Optional, Tuple
+from typing import List, Tuple
 
 import pandas as pd
-import torch
-import torch.nn as nn
-from langchain_core.prompts import PromptTemplate
-from langgraph.graph import StateGraph, END
+from graphviz import Digraph
 from sklearn.metrics import accuracy_score, recall_score, f1_score
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import AutoTokenizer, AutoModelForCausalLM
 
-
-# Define the state structure to hold accumulated information
-class JudgmentState(TypedDict):
-    chunks_processed: List[str]  # Processed summaries of each chunk
-    full_text_summary: str  # Running summary of the entire text
-    judgment_prediction: Optional[str]  # Final prediction (allow/dismiss)
-    chunks: List[str]  # List of chunks to process
-    current_chunk_idx: int  # Index of the current chunk being processed
-
-
-# Custom dataset for batching
-class JudgmentDataset(Dataset):
-    def __init__(self, texts: List[str], labels: List[str]):
-        self.texts = texts
-        self.labels = labels
-
-    def __len__(self):
-        return len(self.texts)
-
-    def __getitem__(self, idx):
-        return self.texts[idx], self.labels[idx]
-
-
-# Custom LLM wrapper for Hugging Face models with multi-GPU support
-class HuggingFaceLLM:
-    def __init__(self, model_name: str):
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.tokenizer.padding_side = 'left'
-        self.model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        # Wrap model with DataParallel for multi-GPU
-        if torch.cuda.device_count() > 1:
-            self.model = nn.DataParallel(self.model)
-        self.model.to(self.device)
-        self.model.eval()
-
-    async def agenerate(self, prompts: List[str], max_length: int) -> List[dict]:
-        inputs = self.tokenizer(prompts, return_tensors="pt", padding=True, truncation=True, max_length=max_length).to(
-            self.device)
-        with torch.no_grad():
-            outputs = self.model.module.generate(**inputs, max_new_tokens=2048, do_sample=True) if isinstance(
-                self.model, nn.DataParallel) else self.model.generate(**inputs, max_new_tokens=2048, do_sample=True)
-        decoded_outputs = [self.tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
-        return [{"text": output[len(prompt):].strip()} for prompt, output in zip(prompts, decoded_outputs)]
-
-    def generate(self, prompts: List[str], max_length: int) -> List[dict]:
-        return asyncio.run(self.agenerate(prompts, max_length))
+from experiments.lg.HuggingFaceLLM import HuggingFaceLLM
+from experiments.lg.JudgmentDataset import JudgmentDataset
+from experiments.lg.JudgmentState import JudgmentState
+from experiments.lg.util import process_chunk, predict_judgment
 
 
 # Function to chunk text based on token count using the model's tokenizer
@@ -85,62 +36,11 @@ def chunk_text_by_tokens(text: str, max_tokens: int, tokenizer) -> List[str]:
     return chunks
 
 
-# Process a single chunk of text (synchronous)
-def process_chunk(state: JudgmentState, llm: HuggingFaceLLM, max_length: int) -> JudgmentState:
-    chunk = state["chunks"][state["current_chunk_idx"]]
-
-    is_final = state['current_chunk_idx'] == len(state['chunks']) - 1
-
-    # prompt = PromptTemplate(
-    #     input_variables=["chunk", "current_summary"],
-    #     template="Given the following chunk of a legal judgment: '{chunk}', and the current summary of all previous chunks: "
-    #              "'{current_summary}', provide a concise summary of this chunk and then generate an overall summary for all the chunks given upto now."
-    #     if is_final else "Given the final chunk of this legal judgment: '{chunk}', and the current summary of all previous chunks: "
-    #                      "'{current_summary}', provide a concise summary of this last chunk and use that to provide a final summary of the whole judgment."
-    # )
-
-    prompt = PromptTemplate(
-        input_variables=["chunk", "current_key_points"],
-        template="Given the following chunk of a legal judgment: '{chunk}', and the current list of key points from all previous chunks: "
-                 "'{current_key_points}', identify the most important points in this chunk and provide them as a concise list. Then, append these points to the existing list to create an updated list of key points for all chunks processed so far."
-        if not is_final else "Given the final chunk of this legal judgment: '{chunk}', and the current list of key points from all previous chunks: "
-                             "'{current_key_points}', identify the most important points in this last chunk as a concise list. Then, append these points to the existing list to provide a final, comprehensive list of key points for the entire judgment."
-    )
-
-    # response = llm.generate(
-    #     [prompt.format(chunk=chunk, current_summary=state["full_text_summary"] or "No summary yet.")], max_length)
-    response = llm.generate(
-        [prompt.format(chunk=chunk, current_key_points=state["full_text_summary"] or "No summary yet.")], max_length)
-    chunk_summary = response[0]["text"]
-    state["chunks_processed"].append(chunk_summary)
-    state["full_text_summary"] = chunk_summary  # Update running summary
-    state["current_chunk_idx"] += 1  # Move to the next chunk
-    return state
-
-
-# Predict judgment based on the full summary (synchronous)
-def predict_judgment(state: JudgmentState, llm: HuggingFaceLLM, max_length: int) -> JudgmentState:
-    prompt = PromptTemplate(
-        input_variables=["summary"],
-        # template="Based on the following summary of a legal judgment: '{summary}', predict the outcome as either "
-        #          "'allow' or 'dismiss'. Provide a single-word answer.",
-        template="""Assume you are a judge at the supreme court in United Kingdom. 
-                    You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision label. 
-                    Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss].
-                    Following is the summary of the judgment, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss.
-                    Summary : {summary}"""
-    )
-    response = llm.generate([prompt.format(summary=state["full_text_summary"])], max_length)
-    prediction = response[0]["text"].lower()
-    state["judgment_prediction"] = "allow" if prediction == "allow" else "dismiss"
-    return state
-
-
 # Main function to set up and run the graph for a single text
 def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: int = 2048) -> Tuple[str, str]:
     # Initialize the state with chunks as a list
     chunks = chunk_text_by_tokens(judgment_text, max_tokens, llm.tokenizer)
-    initial_state: JudgmentState = {
+    state: JudgmentState = {
         "chunks_processed": [],
         "full_text_summary": "",
         "judgment_prediction": None,
@@ -148,22 +48,12 @@ def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: 
         "current_chunk_idx": 0
     }
 
-    workflow = StateGraph(JudgmentState)
-    workflow.add_node("process_chunk", lambda state: process_chunk(state, llm, max_tokens))
-    workflow.add_node("predict_judgment", lambda state: predict_judgment(state, llm, max_tokens))
+    # loop until all chunks are finished
+    while state['current_chunk_idx'] < len(state['chunks_processed']):
+        state = process_chunk(llm, state, max_tokens)
 
-    workflow.set_entry_point("process_chunk")
+    final_state = predict_judgment(llm, state, max_tokens)
 
-    def should_continue(state):
-        if state["current_chunk_idx"] < len(state["chunks"]):
-            return "process_chunk"
-        return "predict_judgment"
-
-    workflow.add_conditional_edges("process_chunk", should_continue)
-    workflow.add_edge("predict_judgment", END)
-
-    app = workflow.compile()
-    final_state = app.invoke(initial_state)
     return final_state["judgment_prediction"], final_state["full_text_summary"]
 
 
@@ -279,6 +169,27 @@ def main():
     # Compute and save metrics
     metrics = compute_metrics(true_labels, predictions)
     save_results(args.model, metrics, predictions, true_labels)
+
+
+# Function to visualize the graph
+def visualize_langgraph(graph):
+    dot = Digraph(comment="LangGraph Visualization")
+    dot.attr(rankdir="LR")  # Left-to-right layout
+
+    # Add nodes
+    for node in graph.nodes:
+        dot.node(node, label=node)
+
+    # Add edges
+    for edge in graph.edges:
+        start, end = edge
+        dot.edge(start, end)
+
+    # Add END as terminating node
+    dot.node("END", shape="doublecircle")
+
+    # Render and display
+    dot.render("langgraph_output", view=True, format="png")  # Saves as PNG and opens it
 
 
 # Run the script
