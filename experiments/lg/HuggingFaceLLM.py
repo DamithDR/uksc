@@ -58,7 +58,7 @@ class HuggingFaceLLM:
             do_sample=True,
             batch_size=self.batch_size
         )
-        print(outputs)
+        # print(outputs)
         responses = []
         for output in tqdm(outputs, total=len(outputs), desc="extracting label outputs"):
             resp = output[0][0]["generated_text"].lower().strip()
