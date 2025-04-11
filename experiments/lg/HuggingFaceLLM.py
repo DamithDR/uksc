@@ -1,4 +1,3 @@
-import asyncio
 from typing import List
 
 import torch
@@ -6,14 +5,12 @@ from torch import nn
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
-from experiments.open_llms import get_chat_template
-
 
 class HuggingFaceLLM:
     def __init__(self, model_name: str, batch_size):
         self.model_name = model_name
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        chat_template = get_chat_template()
+        chat_template = self.get_chat_template()
         if chat_template:
             self.tokenizer.chat_template = chat_template
         self.tokenizer.pad_token = self.tokenizer.eos_token
