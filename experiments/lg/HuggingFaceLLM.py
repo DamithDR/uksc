@@ -11,6 +11,7 @@ from experiments.open_llms import get_chat_template
 
 class HuggingFaceLLM:
     def __init__(self, model_name: str, batch_size):
+        self.model_name = model_name
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         chat_template = get_chat_template()
         if chat_template:
@@ -33,6 +34,21 @@ class HuggingFaceLLM:
             tokenizer=self.tokenizer,
             trust_remote_code=True
         )
+
+    def get_chat_template(self):
+        # https://github.com/chujiezheng/chat_templates/tree/main/chat_templates
+        chat_template = None
+        if str(self.model_name).__contains__('mistral'):
+            chat_template = open('templates/mistral-instruct.jinja').read()
+        elif str(self.model_name).__contains__('falcon'):
+            chat_template = open('templates/falcon-instruct.jinja').read()
+        elif str(self.model_name).__contains__('Llama-2') or str(self.model_name).__contains__('Saul-7B'):
+            chat_template = open('templates/llama-2-chat.jinja').read()
+        elif str(self.model_name).__contains__('Meta-Llama-3'):
+            chat_template = open('templates/llama-3-instruct.jinja').read()
+        elif str(self.model_name).__contains__('Phi-3'):
+            chat_template = open('templates/phi-3.jinja').read()
+        return chat_template
 
     def generate(self, prompts: List[str], max_length: int) -> List[dict]:
 
