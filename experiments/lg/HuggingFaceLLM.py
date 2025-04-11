@@ -19,7 +19,7 @@ class HuggingFaceLLM:
         self.model.to(self.device)
         self.model.eval()
 
-    async def agenerate(self, prompts: List[str], max_length: int) -> List[dict]:
+    def generate(self, prompts: List[str], max_length: int) -> List[dict]:
         inputs = self.tokenizer(prompts, return_tensors="pt", padding=True, truncation=True, max_length=max_length).to(
             self.device)
         with torch.no_grad():
@@ -27,6 +27,3 @@ class HuggingFaceLLM:
                 self.model, nn.DataParallel) else self.model.generate(**inputs, max_new_tokens=2048, do_sample=True)
         decoded_outputs = [self.tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
         return [{"text": output[len(prompt):].strip()} for prompt, output in zip(prompts, decoded_outputs)]
-
-    def generate(self, prompts: List[str], max_length: int) -> List[dict]:
-        return asyncio.run(self.agenerate(prompts, max_length))
