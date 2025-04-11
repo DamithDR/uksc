@@ -61,7 +61,7 @@ class HuggingFaceLLM:
         print(outputs)
         responses = []
         for output in tqdm(outputs, total=len(outputs), desc="extracting label outputs"):
-            resp = output[0]["generated_text"][-1]['content'].lower().strip()
+            resp = output[0][0]["generated_text"].lower().strip()
             responses.append(resp)
 
         return responses
