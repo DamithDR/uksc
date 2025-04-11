@@ -48,7 +48,7 @@ def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: 
     }
 
     # loop until all chunks are finished
-    while state['current_chunk_idx'] < len(state['chunks_processed']):
+    while state['current_chunk_idx'] < len(state['chunks']):
         state = process_chunk(llm, state, max_tokens)
 
     final_state = predict_judgment(llm, state, max_tokens)

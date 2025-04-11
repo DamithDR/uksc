@@ -26,7 +26,6 @@ def process_chunk(llm, state: JudgmentState, max_length: int) -> JudgmentState:
 
     response = llm.generate(
         [prompt.format(chunk=chunk, current_summary=state["full_text_summary"])], max_length)
-    print(response)
     # response = llm.generate(
     #     [prompt.format(chunk=chunk, current_key_points=state["full_text_summary"] or "No summary yet.")], max_length)
     chunk_summary = response[0]["text"]

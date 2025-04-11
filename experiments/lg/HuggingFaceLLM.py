@@ -26,5 +26,4 @@ class HuggingFaceLLM:
             outputs = self.model.module.generate(**inputs, max_new_tokens=2048, do_sample=True) if isinstance(
                 self.model, nn.DataParallel) else self.model.generate(**inputs, max_new_tokens=2048, do_sample=True)
         decoded_outputs = [self.tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
-        print(decoded_outputs)
         return [{"text": output[len(prompt):].strip()} for prompt, output in zip(prompts, decoded_outputs)]
