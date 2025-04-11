@@ -41,7 +41,7 @@ def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: 
     chunks = chunk_text_by_tokens(judgment_text, max_tokens, llm.tokenizer)
     state: JudgmentState = {
         "chunks_processed": [],
-        "full_text_summary": "",
+        "full_text_summary": "No summary yet.",
         "judgment_prediction": None,
         "chunks": chunks,
         "current_chunk_idx": 0
