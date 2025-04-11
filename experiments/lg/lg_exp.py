@@ -3,7 +3,6 @@ import os
 from typing import List, Tuple
 
 import pandas as pd
-from graphviz import Digraph
 from sklearn.metrics import accuracy_score, recall_score, f1_score
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -169,27 +168,6 @@ def main():
     # Compute and save metrics
     metrics = compute_metrics(true_labels, predictions)
     save_results(args.model, metrics, predictions, true_labels)
-
-
-# Function to visualize the graph
-def visualize_langgraph(graph):
-    dot = Digraph(comment="LangGraph Visualization")
-    dot.attr(rankdir="LR")  # Left-to-right layout
-
-    # Add nodes
-    for node in graph.nodes:
-        dot.node(node, label=node)
-
-    # Add edges
-    for edge in graph.edges:
-        start, end = edge
-        dot.edge(start, end)
-
-    # Add END as terminating node
-    dot.node("END", shape="doublecircle")
-
-    # Render and display
-    dot.render("langgraph_output", view=True, format="png")  # Saves as PNG and opens it
 
 
 # Run the script
