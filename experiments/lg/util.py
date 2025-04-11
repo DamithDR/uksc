@@ -30,7 +30,6 @@ def process_chunk(llm, state: JudgmentState, max_length: int) -> JudgmentState:
     #     [prompt.format(chunk=chunk, current_key_points=state["full_text_summary"] or "No summary yet.")], max_length)
     chunk_summary = response[0]["text"]
     state["chunks_processed"].append(chunk_summary)
-    print(chunk_summary)
     state["full_text_summary"] = chunk_summary  # Update running summary
     state["current_chunk_idx"] += 1  # Move to the next chunk
     return state
@@ -47,7 +46,12 @@ def predict_judgment(llm, state: JudgmentState, max_length: int) -> JudgmentStat
                     Following is the summary of the judgment, please respond allow/dismiss, do not respond any explanation, other than allow/dismiss.
                     Summary : {summary}"""
     )
+
+    print(f"judgment made on the following summary : \n {state['full_text_summary']}")
+
     response = llm.generate([prompt.format(summary=state["full_text_summary"])], max_length)
     prediction = response[0]["text"].lower()
+    print(f'prediction : {prediction}')
+    print('======================================================')
     state["judgment_prediction"] = "allow" if prediction == "allow" else "dismiss"
     return state
