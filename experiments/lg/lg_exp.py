@@ -36,7 +36,7 @@ def chunk_text_by_tokens(text: str, max_tokens: int, tokenizer) -> List[str]:
 
 
 # Main function to set up and run the graph for a single text
-def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: int = 2048) -> Tuple[str, str]:
+def run_summariser(judgment_text: str, llm: HuggingFaceLLM, max_tokens: int = 2048) -> str:
     # Initialize the state with chunks as a list
     chunks = chunk_text_by_tokens(judgment_text, max_tokens, llm.tokenizer)
     state: JudgmentState = {
@@ -51,9 +51,9 @@ def run_judgment_predictor(judgment_text: str, llm: HuggingFaceLLM, max_tokens: 
     while state['current_chunk_idx'] < len(state['chunks']):
         state = process_chunk(llm, state, max_tokens)
 
-    final_state = predict_judgment(llm, state, max_tokens)
+    # final_state = predict_judgment(llm, state, max_tokens)
 
-    return final_state["judgment_prediction"], final_state["full_text_summary"]
+    return state["full_text_summary"]
 
 
 # Load judgment text and ground truth from Excel file
@@ -89,20 +89,13 @@ def save_results(model_name: str, metrics: dict, predictions: List[str], true_la
 
 
 # Save predictions and summaries to an Excel file
-def save_outputs(model_name: str, predictions: List[str], summaries: List[str], true_labels: List[str]):
+def save_outputs(model_name: str, summaries: List[str]):
     safe_model_name = model_name.replace("/", "_")
     output_file = "model_outputs.xlsx"
     df = pd.DataFrame({
-        "Prediction": predictions,
         "Full_Summary": summaries,
-        "True_Label": true_labels
     })
 
-    # Check if the file exists to determine the mode (write or append)
-    mode = 'w' if not os.path.exists(output_file) else 'a'
-    # with pd.ExcelWriter(output_file, engine='openpyxl', mode=mode, if_sheet_exists='replace') as writer:
-    #     df.to_excel(writer, sheet_name=safe_model_name, index=False)
-    #
     if not os.path.exists(output_file):
         df.to_excel(output_file, sheet_name=safe_model_name, index=False)
     else:
@@ -114,23 +107,20 @@ def save_outputs(model_name: str, predictions: List[str], summaries: List[str], 
 # Process dataset in batches
 def process_in_batches(dataset: JudgmentDataset, llm: HuggingFaceLLM, max_tokens: int, batch_size: int):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
-    predictions = []
     summaries = []
-    true_labels = []
 
     for batch_texts, batch_labels in tqdm(dataloader):
         batch_predictions = []
         batch_summaries = []
         for text in batch_texts:
-            prediction, summary = run_judgment_predictor(text, llm, max_tokens)
-            batch_predictions.append(prediction)
+            summary = run_summariser(text, llm, max_tokens)
             batch_summaries.append(summary)
-        predictions.extend(batch_predictions)
+            print(summary)
+            print("==========================")
         summaries.extend(batch_summaries)
-        true_labels.extend(batch_labels)
         print(f"Processed batch: {len(batch_predictions)} samples")
 
-    return predictions, summaries, true_labels
+    return summaries
 
 
 # Main function
@@ -145,7 +135,7 @@ def main():
     df = load_dataset()
     dataset = JudgmentDataset(df["judgment_text"].astype(str).tolist(),
                               df["decision_label"].astype(str).str.lower().tolist())
-    llm = HuggingFaceLLM(args.model)
+    llm = HuggingFaceLLM(args.model, batch_size=8)
 
     # Context lengths and batch sizes for specified models
     model_configs = {
@@ -160,14 +150,14 @@ def main():
     batch_size = config["batch_size"]
 
     # Process in batches
-    predictions, summaries, true_labels = process_in_batches(dataset, llm, max_tokens, batch_size)
+    summaries = process_in_batches(dataset, llm, max_tokens, batch_size)
 
     # Save predictions and summaries to Excel
-    save_outputs(args.model, predictions, summaries, predictions)
+    save_outputs(args.model, summaries)
 
     # Compute and save metrics
-    metrics = compute_metrics(true_labels, predictions)
-    save_results(args.model, metrics, predictions, true_labels)
+    # metrics = compute_metrics(true_labels, predictions)
+    # save_results(args.model, metrics, predictions, true_labels)
 
 
 # Run the script
