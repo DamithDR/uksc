@@ -17,7 +17,7 @@ def process_chunk(llm, state: JudgmentState, max_length: int) -> JudgmentState:
     )
     response = llm.generate(
         [prompt.format(chunk=chunk, current_summary=state["full_text_summary"])], max_length)
-    chunk_summary = response[0]
+    chunk_summary = response
     state["chunks_processed"].append(chunk_summary)
     state["full_text_summary"] = chunk_summary  # Update running summary
     state["current_chunk_idx"] += 1  # Move to the next chunk

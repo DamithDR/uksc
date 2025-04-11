@@ -39,6 +39,8 @@ def chunk_text_by_tokens(text: str, max_tokens: int, tokenizer) -> List[str]:
 def run_summariser(judgment_text: str, llm: HuggingFaceLLM, max_tokens: int = 2048) -> str:
     # Initialize the state with chunks as a list
     chunks = chunk_text_by_tokens(judgment_text, max_tokens, llm.tokenizer)
+
+    print(chunks)
     state: JudgmentState = {
         "chunks_processed": [],
         "full_text_summary": "No summary yet.",
