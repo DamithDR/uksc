@@ -56,8 +56,8 @@ class HuggingFaceLLM:
             pad_token_id=self.pipe.model.config.eos_token_id,
             num_return_sequences=1,
             do_sample=True,
-            batch_size=self.batch_size
+            batch_size=1
         )
 
-        return outputs[0]["generated_text"].lower().strip()
+        return outputs[0][0]["generated_text"].lower().strip()
 
