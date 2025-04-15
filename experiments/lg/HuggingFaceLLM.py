@@ -49,10 +49,9 @@ class HuggingFaceLLM:
 
     def generate(self, prompts: List[str]) -> List[dict]:
 
-
         outputs = self.pipe(
             prompts,
-            max_new_tokens=2048,
+            max_new_tokens=500,
             temperature=0.1,
             pad_token_id=self.pipe.model.config.eos_token_id,
             num_return_sequences=1,
@@ -60,7 +59,7 @@ class HuggingFaceLLM:
             batch_size=1
         )
         with open('prompt.txt', 'a') as f:
-            print("PROMPT")
+            f.write("PROMPT")
             f.writelines(prompts)
             f.write('================================================================\n')
             f.write('OUTPUT')
