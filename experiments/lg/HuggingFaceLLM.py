@@ -59,10 +59,10 @@ class HuggingFaceLLM:
             batch_size=1
         )
         with open('prompt.txt', 'a') as f:
-            f.write("PROMPT")
+            f.write("PROMPT\n")
             f.writelines(prompts)
             f.write('================================================================\n')
-            f.write('OUTPUT')
+            f.write('OUTPUT\n')
             f.write(outputs[0][0]["generated_text"].lower().strip())
             f.write('================================================================\n')
 
