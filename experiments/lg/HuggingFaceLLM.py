@@ -49,9 +49,7 @@ class HuggingFaceLLM:
 
     def generate(self, prompts: List[str]) -> List[dict]:
 
-        with open('prompt.txt', 'a') as f:
-            f.writelines(prompts)
-            f.write('================================================================')
+
         outputs = self.pipe(
             prompts,
             max_new_tokens=2048,
@@ -61,5 +59,12 @@ class HuggingFaceLLM:
             do_sample=True,
             batch_size=1
         )
+        with open('prompt.txt', 'a') as f:
+            print("PROMPT")
+            f.writelines(prompts)
+            f.write('================================================================\n')
+            f.write('OUTPUT')
+            f.write(outputs[0][0]["generated_text"].lower().strip())
+            f.write('================================================================\n')
 
         return outputs[0][0]["generated_text"].lower().strip()
