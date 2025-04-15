@@ -13,24 +13,73 @@ from experiments.lg.JudgmentState import JudgmentState
 from experiments.lg.util import process_chunk, predict_judgment
 
 
-# Function to chunk text based on token count using the model's tokenizer
-def chunk_text_by_tokens(text: str, max_tokens: int, tokenizer) -> List[str]:
+def chunk_text_by_tokens(text: str,
+                         max_tokens: int,
+                         tokenizer,
+                         overlap_tokens: int = 0,
+                         split_on: str = None
+                         ) -> List[str]:
+    if not text:
+        return []
+
+    # Encode the entire text
     tokens = tokenizer.encode(text, add_special_tokens=False)
+    if not tokens:
+        return []
+
     chunks = []
     current_chunk = []
     current_token_count = 0
+    i = 0
 
-    for token in tokens:
+    while i < len(tokens):
+        token = tokens[i]
+
+        # Check if adding the next token exceeds the limit
         if current_token_count + 1 > max_tokens:
-            chunks.append(tokenizer.decode(current_chunk, skip_special_tokens=True))
-            current_chunk = [token]
-            current_token_count = 1
+            # Decode the current chunk
+            chunk_text = tokenizer.decode(current_chunk, skip_special_tokens=True).strip()
+            if chunk_text:
+                chunks.append(chunk_text)
+
+            # Handle overlap: move back by overlap_tokens
+            if overlap_tokens > 0:
+                i = max(i - overlap_tokens, 0)
+                tokens = tokens[i:]  # Slice remaining tokens
+                i = 0
+
+            current_chunk = []
+            current_token_count = 0
         else:
             current_chunk.append(token)
             current_token_count += 1
+            i += 1
 
+    # Handle the final chunk
     if current_chunk:
-        chunks.append(tokenizer.decode(current_chunk, skip_special_tokens=True))
+        chunk_text = tokenizer.decode(current_chunk, skip_special_tokens=True).strip()
+        if chunk_text:
+            chunks.append(chunk_text)
+
+    # Optional: If split_on is provided, try to adjust chunks to split at delimiters
+    if split_on and chunks:
+        refined_chunks = []
+        for chunk in chunks:
+            if len(tokenizer.encode(chunk, add_special_tokens=False)) <= max_tokens:
+                refined_chunks.append(chunk)
+                continue
+            # Split chunk on delimiter if it's too long
+            sub_chunks = chunk.split(split_on)
+            temp_chunk = ""
+            for sub in sub_chunks:
+                temp_chunk += sub + (split_on if sub else "")
+                if len(tokenizer.encode(temp_chunk, add_special_tokens=False)) > max_tokens:
+                    if temp_chunk[:-len(split_on)]:
+                        refined_chunks.append(temp_chunk[:-len(split_on)])
+                    temp_chunk = sub + (split_on if sub else "")
+            if temp_chunk:
+                refined_chunks.append(temp_chunk)
+        chunks = refined_chunks
 
     return chunks
 
