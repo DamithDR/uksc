@@ -132,6 +132,7 @@ def main():
     parser.add_argument("--max-tokens", type=int, default=1000, help="Max tokens per chunk")
     args = parser.parse_args()
 
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
     # Load the dataset
     df = load_dataset()
     dataset = JudgmentDataset(df["judgment_text"].astype(str).tolist(),
