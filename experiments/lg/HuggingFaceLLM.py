@@ -48,7 +48,11 @@ class HuggingFaceLLM:
         return chat_template
 
     def generate(self, prompts: List[str], max_length: int) -> List[dict]:
-        print(prompts)
+
+        with open('prompt.txt', 'a') as f:
+            f.writelines(prompts)
+            f.write('================================================================')
+        print()
         outputs = self.pipe(
             prompts,
             max_new_tokens=2048,
@@ -60,4 +64,3 @@ class HuggingFaceLLM:
         )
 
         return outputs[0][0]["generated_text"].lower().strip()
-
