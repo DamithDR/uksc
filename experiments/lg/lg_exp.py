@@ -58,7 +58,7 @@ def run_summariser(judgment_text: str, llm: HuggingFaceLLM, max_tokens: int = 20
 
 
 # Load judgment text and ground truth from Excel file
-def load_dataset(file_path: str = "data/UKSC_dataset_extended.xlsx") -> pd.DataFrame:
+def load_dataset(file_path: str = "data/test_data_extended.xlsx.xlsx") -> pd.DataFrame:
     df = pd.read_excel(file_path)
 
     df = df[:4]

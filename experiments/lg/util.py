@@ -11,9 +11,9 @@ def process_chunk(llm, state: JudgmentState, max_length: int) -> JudgmentState:
     prompt = PromptTemplate(
         input_variables=["chunk", "current_summary"],
         template="Given the following chunk of a legal judgment: '{chunk}', and the current summary of all previous chunks: "
-                 "'{current_summary}', provide a concise summary of this chunk and then generate an overall summary for all the chunks given upto now."
+                 "'{current_summary}', provide a concise summary of this chunk and then generate an overall summary for all the chunks given upto now. Summary should be more than 250 words and less than 500 words."
         if is_final else "Given the final chunk of this legal judgment: '{chunk}', and the current summary of all previous chunks: "
-                         "'{current_summary}', provide a concise summary of this last chunk and use that to provide a final summary of the whole judgment."
+                         "'{current_summary}', provide a concise summary of this last chunk and use that to provide a final summary of the whole judgment. Summary should be more than 250 words and less than 500 words."
     )
     response = llm.generate(
         [prompt.format(chunk=chunk, current_summary=state["full_text_summary"])], max_length)
