@@ -47,12 +47,11 @@ class HuggingFaceLLM:
             chat_template = open('templates/phi-3.jinja').read()
         return chat_template
 
-    def generate(self, prompts: List[str], max_length: int) -> List[dict]:
+    def generate(self, prompts: List[str]) -> List[dict]:
 
         with open('prompt.txt', 'a') as f:
             f.writelines(prompts)
             f.write('================================================================')
-        print()
         outputs = self.pipe(
             prompts,
             max_new_tokens=2048,
