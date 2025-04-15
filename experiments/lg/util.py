@@ -34,11 +34,11 @@ def predict_judgment(llm, state: JudgmentState, max_length: int) -> JudgmentStat
                     Summary : {summary}"""
     )
 
-    print(f"judgment made on the following summary : \n {state['full_text_summary']}")
+    # print(f"judgment made on the following summary : \n {state['full_text_summary']}")
 
     response = llm.generate([prompt.format(summary=state["full_text_summary"])], max_length)
     prediction = response[0]["text"].lower()
-    print(f'prediction : {prediction}')
-    print('======================================================')
+    # print(f'prediction : {prediction}')
+    # print('======================================================')
     state["judgment_prediction"] = "allow" if prediction == "allow" else "dismiss"
     return state
