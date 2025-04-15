@@ -56,13 +56,14 @@ class HuggingFaceLLM:
             pad_token_id=self.pipe.model.config.eos_token_id,
             num_return_sequences=1,
             do_sample=True,
-            batch_size=1
+            batch_size=1,
+            return_full_text=False
         )
         with open('prompt.txt', 'a') as f:
-            f.write("PROMPT\n")
+            f.write("\nPROMPT\n")
             f.writelines(prompts)
             f.write('================================================================\n')
-            f.write('OUTPUT\n')
+            f.write('\nOUTPUT\n')
             f.write(outputs[0][0]["generated_text"].lower().strip())
             f.write('================================================================\n')
 
