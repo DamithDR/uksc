@@ -59,6 +59,7 @@ def run(args):
         # pad_token_id=pipe.model.config.eos_token_id,
         num_return_sequences=1,
         do_sample=True,
+        truncation=True,
         batch_size=args.batch_size  # does not work with the padding token issue
     )
     for output in tqdm(decision_outputs, total=len(decision_outputs), desc="extracting label outputs"):
@@ -92,6 +93,7 @@ def run(args):
         # pad_token_id=pipe.model.config.eos_token_id,
         num_return_sequences=1,
         do_sample=True,
+        truncation=True,
         batch_size=args.batch_size
     )
 

@@ -1,5 +1,6 @@
 import argparse
 import os
+from os import truncate
 
 import pandas as pd
 import torch
@@ -60,15 +61,6 @@ def get_messages_for_reasoning(df, decision_labels, run_mode=None, input_column=
         ]
         reasoning_messages.append(messages)
 
-
-        message = """
-        Assume you are a judge at the supreme court in United Kingdom. 
-        You will be provided UK supreme court appeal cases by the users and your duty is to understand the case background and output your decision label.
-        Classify whether the provided appeal is allowed or dismissed, select one from following : [allow,dismiss]
-        Judgment label: {decision_label}
-        Now generate the reason behind the decision given the summary of the judgment: {summary}
-        Do not need to mention your decision label again. Carefully consider the case background and your decided label and only output the reasoning behind your decision.
-        """
     return reasoning_messages
 
 
@@ -98,7 +90,7 @@ def run(args):
     df = pd.read_excel('data/test_data_extended.xlsx', sheet_name='data')
 
 
-    tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True)
+    tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True,)
     chat_template = get_chat_template()
     if chat_template:
         tokenizer_mt.chat_template = chat_template
@@ -129,7 +121,8 @@ def run(args):
         pad_token_id=pipe.model.config.eos_token_id,
         num_return_sequences=1,
         do_sample=True,
-        batch_size=args.batch_size
+        batch_size=args.batch_size,
+        truncation=True
     )
     for output in tqdm(decision_outputs, total=len(decision_outputs), desc="extracting label outputs"):
         resp = output[0]["generated_text"][-1]['content'].lower().strip()
@@ -154,6 +147,7 @@ def run(args):
         f.write(
             f'{model_name}\t{round(w_recall, 2)}\t{round(w_precision, 2)}\t{round(w_f1, 2)}\t{round(m_f1, 2)}\n')
 
+
     reasoning_messages = get_messages_for_reasoning(df, decision_labels, args.run_mode, args.input_column)
     print(f'{args.model_name} : Generating Reasons')
     reasoning_outputs = pipe(
@@ -163,7 +157,8 @@ def run(args):
         pad_token_id=pipe.model.config.eos_token_id,
         num_return_sequences=1,
         do_sample=True,
-        batch_size=int(args.batch_size / 2)
+        batch_size=int(args.batch_size / 2),
+        truncation=True
     )
 
     reasons = []
