@@ -60,7 +60,7 @@ def run(args):
         num_return_sequences=1,
         do_sample=True,
         truncation=True,
-        max_length=model_configs[args.model_name],
+        max_length=model_configs[args.model_name]['context_length'],
         batch_size=args.batch_size  # does not work with the padding token issue
     )
     for output in tqdm(decision_outputs, total=len(decision_outputs), desc="extracting label outputs"):
@@ -95,7 +95,7 @@ def run(args):
         num_return_sequences=1,
         do_sample=True,
         truncation=True,
-        max_length=model_configs[args.model_name],
+        max_length=model_configs[args.model_name]['context_length'],
         batch_size=args.batch_size
     )
 
