@@ -60,6 +60,7 @@ def run(args):
         num_return_sequences=1,
         do_sample=True,
         truncation=True,
+        max_length=model_configs[args.model_name],
         batch_size=args.batch_size  # does not work with the padding token issue
     )
     for output in tqdm(decision_outputs, total=len(decision_outputs), desc="extracting label outputs"):
@@ -94,6 +95,7 @@ def run(args):
         num_return_sequences=1,
         do_sample=True,
         truncation=True,
+        max_length=model_configs[args.model_name],
         batch_size=args.batch_size
     )
 
@@ -117,6 +119,14 @@ def run(args):
 
 
 if __name__ == '__main__':
+    model_configs = {
+        "meta-llama/Llama-2-7b-chat-hf": {"context_length": 4096, "batch_size": 12},
+        "mistralai/Mistral-7B-Instruct-v0.3": {"context_length": 32768, "batch_size": 12},
+        "microsoft/Phi-3-mini-128k-instruct": {"context_length": 128000, "batch_size": 18},
+        "Equall/Saul-7B-Instruct-v1": {"context_length": 32768, "batch_size": 12},
+        "meta-llama/Meta-Llama-3.1-8B-Instruct": {"context_length": 128000, "batch_size": 9}
+    }
+
     parser = argparse.ArgumentParser(
         description='''judgement prediction in UKSC cases''')
     parser.add_argument('--model_name', type=str, required=False, default='local_models/Meta-Llama-3.1-8B-Instruct',
