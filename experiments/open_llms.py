@@ -80,17 +80,15 @@ def get_chat_template():
     return chat_template
 
 
-
-
 def run(args):
     print(f'{args.model_name} : Running Started | Run mode : {args.run_mode}')
     model_name = str(args.model_name).split('/')[1] if str(args.model_name).__contains__('/') else str(args.model_name)
     os.environ["CUDA_VISIBLE_DEVICES"] = args.visible_cuda_devices  # set the devices you need to run
 
     df = pd.read_excel('data/test_data_extended.xlsx', sheet_name='data')
+    df = df[:4]  # todo remove after testing
 
-
-    tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True,)
+    tokenizer_mt = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True, )
     chat_template = get_chat_template()
     if chat_template:
         tokenizer_mt.chat_template = chat_template
@@ -148,7 +146,6 @@ def run(args):
         f.write(
             f'{model_name}\t{round(w_recall, 2)}\t{round(w_precision, 2)}\t{round(w_f1, 2)}\t{round(m_f1, 2)}\n')
 
-
     reasoning_messages = get_messages_for_reasoning(df, decision_labels, args.run_mode, args.input_column)
     print(f'{args.model_name} : Generating Reasons')
     reasoning_outputs = pipe(
@@ -174,7 +171,8 @@ def run(args):
     reasons_df['predictions'] = reasons
 
     if not os.path.exists(f"outputs/reasons_{args.run_mode}_{args.input_column}.xlsx"):
-        reasons_df.to_excel(f"outputs/reasons_{args.run_mode}_{args.input_column}.xlsx", sheet_name=f"{model_name}", index=False)
+        reasons_df.to_excel(f"outputs/reasons_{args.run_mode}_{args.input_column}.xlsx", sheet_name=f"{model_name}",
+                            index=False)
     else:
         with pd.ExcelWriter(f'outputs/reasons_{args.run_mode}_{args.input_column}.xlsx', mode='a', engine='openpyxl',
                             if_sheet_exists='replace') as writer:
