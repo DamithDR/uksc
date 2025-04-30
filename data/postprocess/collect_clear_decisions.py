@@ -11,24 +11,24 @@ gpt_models = ['gpt-3.5-turbo-0125', 'gpt-4-turbo-2024-04-09']
 
 def run(input_file, input_gpt_file, output_file):
     # clean and clear the decisions
-    for model in open_models:
-        model_decisions = pd.read_excel(input_file, sheet_name=model)
-        decisions = model_decisions['predictions']
-        decisions = list(map(lambda x: x.lower(), decisions))
-        decisions = list(map(lambda x: x.replace('allow.', 'allow'), decisions))
-        decisions = list(map(lambda x: x.replace('dismiss.', 'dismiss'), decisions))
-        decisions = list(map(lambda x: x.replace('\n', ''), decisions))
-        decisions = list(map(lambda x: x.replace('<<sys>>', ''), decisions))
-        decisions = list(map(lambda x: x.replace('<</sys>>', ''), decisions))
-        decisions = list(map(lambda x: x.replace('[', ''), decisions))
-        decisions = list(map(lambda x: x.replace(']', ''), decisions))
-        model_decisions['predictions'] = decisions
-        if not os.path.exists(output_file):
-            model_decisions.to_excel(output_file, sheet_name=model, index=False)
-        else:
-            with pd.ExcelWriter(output_file, mode='a', engine='openpyxl',
-                                if_sheet_exists='replace') as writer:
-                model_decisions.to_excel(writer, sheet_name=model, index=False)
+    # for model in open_models:
+    #     model_decisions = pd.read_excel(input_file, sheet_name=model)
+    #     decisions = model_decisions['predictions']
+    #     decisions = list(map(lambda x: x.lower(), decisions))
+    #     decisions = list(map(lambda x: x.replace('allow.', 'allow'), decisions))
+    #     decisions = list(map(lambda x: x.replace('dismiss.', 'dismiss'), decisions))
+    #     decisions = list(map(lambda x: x.replace('\n', ''), decisions))
+    #     decisions = list(map(lambda x: x.replace('<<sys>>', ''), decisions))
+    #     decisions = list(map(lambda x: x.replace('<</sys>>', ''), decisions))
+    #     decisions = list(map(lambda x: x.replace('[', ''), decisions))
+    #     decisions = list(map(lambda x: x.replace(']', ''), decisions))
+    #     model_decisions['predictions'] = decisions
+    #     if not os.path.exists(output_file):
+    #         model_decisions.to_excel(output_file, sheet_name=model, index=False)
+    #     else:
+    #         with pd.ExcelWriter(output_file, mode='a', engine='openpyxl',
+    #                             if_sheet_exists='replace') as writer:
+    #             model_decisions.to_excel(writer, sheet_name=model, index=False)
 
     for model in gpt_models:
         model_decisions = pd.read_excel(input_gpt_file, sheet_name=model)
@@ -58,7 +58,8 @@ if __name__ == '__main__':
         output_file = 'evaluation/decisions_tag.xlsx'
     else:
         input_file = 'outputs/decisions.xlsx'
-        input_gpt_file = 'outputs/chatgpt_decisions.xlsx'
+        # input_gpt_file = 'outputs/rag_chatgpt_decisions_background.xlsx'
+        input_gpt_file = 'outputs/rag_chatgpt_decisions_judgment.xlsx'
         output_file = 'evaluation/decisions.xlsx'
 
 

@@ -65,12 +65,14 @@ if __name__ == '__main__':
         input_decisions = 'evaluation/decisions.xlsx'
         input_reasons = 'evaluation/reasons.xlsx'
 
-    models = ['Llama-2-7b-chat-hf', 'Mistral-7B-Instruct-v0.3', 'Phi-3-mini-128k-instruct', 'Saul-7B-Instruct-v1',
-              'Meta-Llama-3.1-8B-Instruct', 'gpt-3.5-turbo-0125', 'gpt-4-turbo-2024-04-09']
+    # models = ['Llama-2-7b-chat-hf', 'Mistral-7B-Instruct-v0.3', 'Phi-3-mini-128k-instruct', 'Saul-7B-Instruct-v1',
+    #           'Meta-Llama-3.1-8B-Instruct', 'gpt-3.5-turbo-0125', 'gpt-4-turbo-2024-04-09']
+    models = ['gpt-3.5-turbo-0125', 'gpt-4-turbo-2024-04-09']
 
     global_cutoff_date = '12/31/2023'
 
-    model_cutoff_dates = ['7/31/2023', '10/31/2023', '10/31/2023', '2/28/2023', '12/31/2023', '9/30/2021', '12/31/2023']
+    # model_cutoff_dates = ['7/31/2023', '10/31/2023', '10/31/2023', '2/28/2023', '12/31/2023', '9/30/2021', '12/31/2023']
+    model_cutoff_dates = ['9/30/2021', '12/31/2023']
 
     for model, date in zip(models, model_cutoff_dates):
         m_f1_all, w_f1_all = evaluate_decisions(model, input_path=input_decisions, tag_path=tag_path)

@@ -151,13 +151,13 @@ def load_and_prepare_data():
     historic_df['labels'] = historic_df['labels'].map(LABEL_MAP)
 
     # Prepare test data - full judgment
-    # test_df = test_df[['judgment_text', 'decision_label']].rename(
-    #     columns={'judgment_text': 'text', 'decision_label': 'labels'}
-    # )
-    # press summary background
-    test_df = test_df[['background', 'decision_label']].rename(
-        columns={'background': 'text', 'decision_label': 'labels'}
+    test_df = test_df[['judgment_text', 'decision_label']].rename(
+        columns={'judgment_text': 'text', 'decision_label': 'labels'}
     )
+    # press summary background
+    # test_df = test_df[['background', 'decision_label']].rename(
+    #     columns={'background': 'text', 'decision_label': 'labels'}
+    # )
     test_df['labels'] = test_df['labels'].map(LABEL_MAP)
 
     # Split historic data into train (90%) and validation (10%)

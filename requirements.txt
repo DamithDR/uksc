@@ -9,7 +9,6 @@ einops
 tiktoken
 protobuf
 sentencepiece
-flash_attn --no-build-isolation
 rouge-score
 nltk
 bert_score
@@ -18,3 +17,4 @@ requests
 beautifulsoup4
 tqdm
 numpy
+rank-bm25
