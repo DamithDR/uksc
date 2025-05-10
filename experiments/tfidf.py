@@ -12,7 +12,7 @@ if not os.path.exists('results'):
     os.makedirs('results')
 
 # Load datasets
-train_data = pd.read_excel('data/historic/historic_data.xlsx', sheet_name='data')
+train_data = pd.read_excel('data/historic/historic_data_with_reason.xlsx', sheet_name='data')
 test_data = pd.read_excel('data/test_data_extended.xlsx', sheet_name='data')
 
 
@@ -42,6 +42,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test, experiment_name):
 
     # Store macro F1 scores
     macro_f1_scores = {}
+    weighted_f1_scores = {}
 
     # Train and evaluate each model
     print(f"\nResults for {experiment_name}:")
@@ -60,12 +61,15 @@ def train_and_evaluate(X_train, X_test, y_train, y_test, experiment_name):
         report_dict = classification_report(y_test, y_pred, target_names=['dismiss', 'allow'], output_dict=True)
         report = classification_report(y_test, y_pred, target_names=['dismiss', 'allow'])
         macro_f1 = report_dict['macro avg']['f1-score']
+        weighted_f1 = report_dict['weighted avg']['f1-score']
         macro_f1_scores[model_name] = macro_f1
+        weighted_f1_scores[model_name] = weighted_f1
 
         # Print to console
         print(f"\n{model_name}:")
         print(f"Accuracy: {accuracy:.4f}")
         print(f"Macro F1 Score: {macro_f1:.4f}")
+        print(f"Weighted F1 Score: {weighted_f1:.4f}")
         print("Classification Report:")
         print(report)
 
@@ -75,10 +79,11 @@ def train_and_evaluate(X_train, X_test, y_train, y_test, experiment_name):
             f.write(f"{experiment_name} - {model_name}\n")
             f.write(f"Accuracy: {accuracy:.4f}\n")
             f.write(f"Macro F1 Score: {macro_f1:.4f}\n")
+            f.write(f"Weighted F1 Score: {weighted_f1:.4f}\n")
             f.write("Classification Report:\n")
             f.write(report)
 
-    return macro_f1_scores
+    return macro_f1_scores, weighted_f1_scores
 
 
 # Run experiments and collect macro F1 scores
@@ -87,20 +92,22 @@ X_train_bg = train_data['background'].fillna('')
 X_test_bg = test_data['background'].fillna('')
 y_train = train_data['decision_label']
 y_test = test_data['decision_label']
-bg_scores = train_and_evaluate(X_train_bg, X_test_bg, y_train, y_test, "Background")
+bg_scores, bgw_scores = train_and_evaluate(X_train_bg, X_test_bg, y_train, y_test, "Background")
 
 print("\nExperiment 2: Predicting using Judgment")
 X_train_judgment = train_data['judgment'].fillna('')
 X_test_judgment = test_data['judgment'].fillna('')
 y_train = train_data['decision_label']
 y_test = test_data['decision_label']
-judgment_scores = train_and_evaluate(X_train_judgment, X_test_judgment, y_train, y_test, "Judgment")
+judgment_scores, jd_w_scores = train_and_evaluate(X_train_judgment, X_test_judgment, y_train, y_test, "Judgment")
 
 # Format and output the macro F1 table
 table_output = (
     "method     SVM     KNN     LR     XGBoost\n"
-    f"background {bg_scores['SVM']:.4f} {bg_scores['KNN']:.4f} {bg_scores['LR']:.4f} {bg_scores['XGBoost']:.4f}\n"
-    f"judgment   {judgment_scores['SVM']:.4f} {judgment_scores['KNN']:.4f} {judgment_scores['LR']:.4f} {judgment_scores['XGBoost']:.4f}"
+    f"background macro {bg_scores['SVM']:.4f} {bg_scores['KNN']:.4f} {bg_scores['LR']:.4f} {bg_scores['XGBoost']:.4f}\n"
+    f"background weighted {bgw_scores['SVM']:.4f} {bgw_scores['KNN']:.4f} {bgw_scores['LR']:.4f} {bgw_scores['XGBoost']:.4f}\n"
+    f"judgment macro  {judgment_scores['SVM']:.4f} {judgment_scores['KNN']:.4f} {judgment_scores['LR']:.4f} {judgment_scores['XGBoost']:.4f}\n"
+    f"judgment weighted  {jd_w_scores['SVM']:.4f} {jd_w_scores['KNN']:.4f} {jd_w_scores['LR']:.4f} {jd_w_scores['XGBoost']:.4f}"
 )
 print("\nMacro F1 Scores Table:")
 print(table_output)

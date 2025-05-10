@@ -6,16 +6,21 @@ from openai import OpenAI
 from tqdm import tqdm
 
 from retrieval.BM25Retriever import BM25Retriever
+from retrieval.RandomRetriever import RandomRetriever
 from util.eval import eval_decisions
 
 
-def get_rag_messages_for_labels(df, retriever, input_column='background', ):
+def get_rag_messages_for_labels(df, retriever, input_column='background', retrieve_mode='random'):
     label_classification_messages = []
     for background, decision, reason, title, legal_area in tqdm(
             zip(df[input_column], df['decision'], df['reasoning'], df['title'], df['legal_area']),
             total=len(df),
             desc="generating label outputs"):
-        rag_case = retriever.retrieve(background, top_k=1)
+
+        if retrieve_mode == 'bm25':
+            rag_case = retriever.retrieve(background, top_k=1)
+        else:
+            rag_case = retriever.retrieve()
 
         mode_string = ''
         messages = [
@@ -35,13 +40,16 @@ def get_rag_messages_for_labels(df, retriever, input_column='background', ):
     return label_classification_messages
 
 
-def get_messages_for_reasoning(df, decision_labels, retriever, input_column='background'):
+def get_messages_for_reasoning(df, decision_labels, retriever, input_column='background', retrieve_mode='random'):
     reasoning_messages = []
     for background, decision, reason, title, legal_area, label in tqdm(
             zip(df[input_column], df['decision'], df['reasoning'], df['title'], df['legal_area'], decision_labels),
             total=len(df),
             desc="generating label outputs"):
-        rag_case = retriever.retrieve(background, top_k=1)
+        if retrieve_mode == 'bm25':
+            rag_case = retriever.retrieve(background, top_k=1)
+        else:
+            rag_case = retriever.retrieve()
         mode_string = ''
         messages = [
             {"role": "system",
@@ -65,18 +73,27 @@ def get_messages_for_reasoning(df, decision_labels, retriever, input_column='bac
     return reasoning_messages
 
 
-def run(model, input_column):
-    retriever = BM25Retriever(
-        excel_file="data/historic/historic_data_with_reason.xlsx",
-        sheet_name="data",
-        text_column="background",
-        label_column="decision_label"
-    )
+def run(model, input_column, retrieve_mode='random'):
+    if retrieve_mode == 'bm25':
+        retriever = BM25Retriever(
+            excel_file="data/historic/historic_data_with_reason.xlsx",
+            sheet_name="data",
+            text_column="background",
+            label_column="decision_label"
+        )
+    else:
+        retriever = RandomRetriever(
+            excel_file="data/historic/historic_data_with_reason.xlsx",
+            sheet_name="data",
+            text_column="background",
+            label_column="decision_label"
+        )
 
-    client = OpenAI(api_key="sk-029c53e3d9fe4d8fac3bf828dcd6b50c", base_url="https://api.deepseek.com")
+    client = OpenAI(api_key="", base_url="https://api.deepseek.com")
 
     df = pd.read_excel('data/test_data_extended.xlsx', sheet_name='data')
-    decision_messages = get_rag_messages_for_labels(df, retriever, input_column)
+
+    decision_messages = get_rag_messages_for_labels(df, retriever, input_column, retrieve_mode=retrieve_mode)
     decisions = []
     for messages in tqdm(decision_messages, total=len(decision_messages)):
         response = client.chat.completions.create(
@@ -94,20 +111,20 @@ def run(model, input_column):
     decisions_df['gold'] = df['decision_label']
     decisions_df['predictions'] = decisions
 
-    if not os.path.exists(f"outputs/rag_deepseek_decisions_{input_column}.xlsx"):
-        decisions_df.to_excel(f"outputs/rag_deepseek_decisions_{input_column}.xlsx", sheet_name=model, index=False)
+    if not os.path.exists(f"outputs/rag_random_deepseek_decisions_{input_column}.xlsx"):
+        decisions_df.to_excel(f"outputs/rag_random_deepseek_decisions_{input_column}.xlsx", sheet_name=model, index=False)
     else:
-        with pd.ExcelWriter(f'outputs/rag_deepseek_decisions_{input_column}.xlsx', mode='a', engine='openpyxl',
+        with pd.ExcelWriter(f'outputs/rag_random_deepseek_decisions_{input_column}.xlsx', mode='a', engine='openpyxl',
                             if_sheet_exists='replace') as writer:
             decisions_df.to_excel(writer, sheet_name=model, index=False)
 
     w_recall, w_precision, w_f1, m_f1 = eval_decisions(decisions_df, 'predictions', 'gold')
-    with open(f'rag_decision_stats.tsv', 'a') as f:
+    with open(f'rag_random_decision_stats.tsv', 'a') as f:
         f.write(
             f'{model}\t{w_recall}\t{w_precision}\t{w_f1}\t{m_f1}\n')
 
     # reasoning
-    reason_messages = get_messages_for_reasoning(df, decisions, retriever, input_column)
+    reason_messages = get_messages_for_reasoning(df, decisions, retriever, input_column, retrieve_mode= retrieve_mode)
     reasons = []
     for messages in tqdm(reason_messages, total=len(reason_messages)):
         response = client.chat.completions.create(
@@ -125,10 +142,10 @@ def run(model, input_column):
     reasons_df['gold'] = df['reasoning']
     reasons_df['predictions'] = reasons
 
-    if not os.path.exists(f"outputs/rag_deepseek_reasons_{input_column}.xlsx"):
-        reasons_df.to_excel(f"outputs/rag_deepseek_reasons_{input_column}.xlsx", sheet_name=model, index=False)
+    if not os.path.exists(f"outputs/rag_random_deepseek_reasons_{input_column}.xlsx"):
+        reasons_df.to_excel(f"outputs/rag_random_deepseek_reasons_{input_column}.xlsx", sheet_name=model, index=False)
     else:
-        with pd.ExcelWriter(f'outputs/rag_deepseek_reasons_{input_column}.xlsx', mode='a', engine='openpyxl',
+        with pd.ExcelWriter(f'outputs/rag_random_deepseek_reasons_{input_column}.xlsx', mode='a', engine='openpyxl',
                             if_sheet_exists='replace') as writer:
             reasons_df.to_excel(writer, sheet_name=model, index=False)
 

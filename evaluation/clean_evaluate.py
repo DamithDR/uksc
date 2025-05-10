@@ -71,9 +71,39 @@ if __name__ == '__main__':
     # eval_reasons('outputs/deepseek_reasons_judgment.xlsx', 'deepseek-chat', 'deepseek_normal_judgment')
 
     # deep seek
-    eval_classifications('outputs/rag_deepseek_decisions_background.xlsx','deepseek-chat','rag_deepseek_normal_background')
-    eval_reasons('outputs/rag_deepseek_reasons_background.xlsx','deepseek-chat','rag_deepseek_normal_background')
+    # eval_classifications('outputs/rag_deepseek_decisions_background.xlsx','deepseek-chat','rag_deepseek_normal_background')
+    # eval_reasons('outputs/rag_deepseek_reasons_background.xlsx','deepseek-chat','rag_deepseek_normal_background')
 
-    # deep seek
-    eval_classifications('outputs/rag_deepseek_decisions_judgment.xlsx', 'deepseek-chat', 'rag_deepseek_normal_judgment')
-    eval_reasons('outputs/rag_deepseek_reasons_judgment.xlsx', 'deepseek-chat', 'rag_deepseek_normal_judgment')
+    # deep seek rag
+    # eval_classifications('outputs/rag_deepseek_decisions_judgment.xlsx', 'deepseek-chat', 'rag_deepseek_normal_judgment')
+    # eval_reasons('outputs/rag_deepseek_reasons_judgment.xlsx', 'deepseek-chat', 'rag_deepseek_normal_judgment')
+
+    # deep seek random rag
+    # eval_classifications('outputs/rag_random_deepseek_decisions_background.xlsx','deepseek-chat','rag_random_deepseek_normal_background')
+    # eval_reasons('outputs/rag_random_deepseek_reasons_background.xlsx','deepseek-chat','rag_random_deepseek_normal_background')
+
+    # deep seek random rag
+    # eval_classifications('outputs/rag_random_deepseek_decisions_judgment.xlsx', 'deepseek-chat',
+    #                      'rag_random_deepseek_normal_judgment')
+    # eval_reasons('outputs/rag_random_deepseek_reasons_judgment.xlsx', 'deepseek-chat', 'rag_random_deepseek_normal_judgment')
+
+    #chatgpt random
+    # eval_classifications('outputs/rag_random_chatgpt_decisions_judgment.xlsx', 'gpt-3.5-turbo-0125',
+    #              'rag_random_gpt3.5_normal_background')
+    # eval_reasons('outputs/rag_random_chatgpt_reasons_background.xlsx', 'gpt-3.5-turbo-0125',
+    #              'rag_random_gpt3.5_normal_background')
+    #
+    # eval_classifications('outputs/rag_random_chatgpt_decisions_judgment.xlsx', 'gpt-3.5-turbo-0125',
+    #                      'rag_random_gpt3.5_normal_judgment')
+    # eval_reasons('outputs/rag_random_chatgpt_reasons_judgment.xlsx', 'gpt-3.5-turbo-0125',
+    #              'rag_random_gpt3.5_normal_judgment')
+
+    eval_classifications('outputs/rag_random_chatgpt_decisions_judgment.xlsx', 'gpt-4-turbo-2024-04-09',
+                         'rag_random_gpt4_normal_background')
+    eval_reasons('outputs/rag_random_chatgpt_reasons_background.xlsx', 'gpt-4-turbo-2024-04-09',
+                 'rag_random_gpt4_normal_background')
+
+    eval_classifications('outputs/rag_random_chatgpt_decisions_judgment.xlsx', 'gpt-4-turbo-2024-04-09',
+                         'rag_random_gpt4_normal_judgment')
+    eval_reasons('outputs/rag_random_chatgpt_reasons_judgment.xlsx', 'gpt-4-turbo-2024-04-09',
+                 'rag_random_gpt4_normal_judgment')
