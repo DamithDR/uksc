@@ -40,6 +40,7 @@ def run(column):
     model_args.evaluate_during_training = True
     model_args.evaluate_during_training_verbose = True
     model_args.output_dir = 't5_outputs'
+    model_args.overwrite_output_dir = True
 
     model = T5Model("t5", "t5-base", args=model_args)
 
