@@ -34,7 +34,7 @@ def run(column):
 
     # Configure the model
     model_args = T5Args()
-    model_args.num_train_epochs = 200
+    model_args.num_train_epochs = 10
     model_args.no_save = True
     # model_args.evaluate_generated_text = True
     model_args.evaluate_during_training = True
@@ -49,7 +49,7 @@ def run(column):
 
 
     test_df = pd.read_excel('data/test_data_extended.xlsx', sheet_name='data')
-    to_predict = test_df[column]
+    to_predict = test_df[column].to_list()
 
     predictions = model.predict(to_predict)
 
