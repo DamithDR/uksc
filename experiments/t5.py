@@ -34,7 +34,7 @@ def run(column):
 
     # Configure the model
     model_args = T5Args()
-    model_args.num_train_epochs = 10
+    model_args.num_train_epochs = 150
     model_args.no_save = True
     # model_args.evaluate_generated_text = True
     model_args.evaluate_during_training = True
