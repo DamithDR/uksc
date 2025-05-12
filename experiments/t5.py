@@ -42,7 +42,8 @@ def run(column):
     model_args.output_dir = 't5_outputs'
     model_args.overwrite_output_dir = True
 
-    model = T5Model("t5", "t5-base", args=model_args)
+    model = T5Model("t5", "google/long-t5-tglobal-large", args=model_args)
+    # model = T5Model("t5", "t5-base", args=model_args)
 
     # Train the model
     model.train_model(train_df, eval_data=eval_df)
