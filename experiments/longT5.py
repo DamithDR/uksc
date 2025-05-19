@@ -13,7 +13,7 @@ def preprocess(example):
         example['input'],
         truncation=True,
         padding="max_length",
-        max_length=4096
+        max_length=2048
     )
 
     # Tokenize output (reasoning)
@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     MODEL_NAME = "google/long-t5-tglobal-base"
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    MAX_INPUT_LENGTH = 4096
+    MAX_INPUT_LENGTH = 2048
     MAX_TARGET_LENGTH = 512
 
     train_df = pd.read_excel('data/historic/historic_data_with_reason.xlsx', sheet_name='data')
@@ -71,13 +71,13 @@ if __name__ == '__main__':
 
     training_args = TrainingArguments(
         output_dir="./longt5-legal-finetuned",
-        per_device_train_batch_size=1,
+        per_device_train_batch_size=2,
         num_train_epochs=3,
         logging_dir="./logs",
         logging_steps=10,
         save_total_limit=1,
         save_strategy="epoch",
-        learning_rate=1e-5,
+        learning_rate=5e-6,
         fp16=True,  # if using GPU with fp16 support
         evaluation_strategy="no"
     )
