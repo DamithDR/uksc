@@ -60,7 +60,7 @@ if __name__ == '__main__':
     )
 
     # Format for HuggingFace datasets
-    train_dataset = Dataset.from_pandas(train_df[[f'{column}', 'reasoning']].rename(columns={
+    train_dataset = Dataset.from_pandas(train_df[['prompt', 'reasoning']].rename(columns={
         "prompt": "input",
         "reasoning": "output"
     }))
