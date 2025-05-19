@@ -77,7 +77,7 @@ if __name__ == '__main__':
         logging_steps=10,
         save_total_limit=1,
         save_strategy="epoch",
-        learning_rate=1e-4,
+        learning_rate=1e-5,
         fp16=True,  # if using GPU with fp16 support
         evaluation_strategy="no"
     )
