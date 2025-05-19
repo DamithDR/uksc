@@ -3,3 +3,5 @@ python -m experiments.llama2_exp --model_name meta-llama/Meta-Llama-3-8B-Instruc
 python -m baselines.samll_transformers --model_type longformer --model_name lexlms/legal-longformer-base --num_train_epochs 5 --learning_rate 1e-5 --train_batch_size 16 --eval_batch_size 16
 
 python -m experiments.t5
+
+python -m experiments.longT5

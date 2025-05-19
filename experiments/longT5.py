@@ -8,12 +8,26 @@ from transformers import AutoTokenizer
 
 
 def preprocess(example):
-    input_text = f"Explain the legal reasoning: {example['input']}"
-    inputs = tokenizer(input_text, truncation=True, padding="max_length", max_length=MAX_INPUT_LENGTH)
-    targets = tokenizer(example['output'], truncation=True, padding="max_length", max_length=MAX_TARGET_LENGTH)
+    # Tokenize input prompt
+    model_input = tokenizer(
+        example['input'],
+        truncation=True,
+        padding="max_length",
+        max_length=4096
+    )
 
-    inputs["labels"] = targets["input_ids"]
-    return inputs
+    # Tokenize output (reasoning)
+    with tokenizer.as_target_tokenizer():
+        label = tokenizer(
+            example['output'],
+            truncation=True,
+            padding="max_length",
+            max_length=512
+        )
+
+    model_input["labels"] = label["input_ids"]
+    return model_input
+
 
 def generate_reasoning(text):
         prompt = f"Explain the legal reasoning: {text}"
