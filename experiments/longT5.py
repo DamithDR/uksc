@@ -55,8 +55,7 @@ if __name__ == '__main__':
     train_df = pd.read_excel('data/historic/historic_data_with_reason.xlsx', sheet_name='data')
     train_df['prompt'] = train_df.apply(
         lambda
-            row: f"Decision of the following case is {row['decision_label']}. Then explain the reasoning for the case: {row[column]},"
-                 f" Reasoning: {row['reasoning']}",
+            row: f"Decision of the following case is {row['decision_label']}. Then explain the reasoning for the case: {row[column]}",
         axis=1
     )
 
