@@ -11,9 +11,9 @@ TRAIN_PATH = "data/historic/historic_data_with_reason.xlsx"
 TEST_PATH = "data/test_data_extended.xlsx"
 SHEET_NAME = "data"
 MODEL_NAME = "allenai/led-base-16384"
-MAX_INPUT_LENGTH = 4096
-MAX_TARGET_LENGTH = 512
-MAX_OUTPUT_LENGTH  = 512
+MAX_INPUT_LENGTH = 8192
+MAX_TARGET_LENGTH = 2048
+MAX_OUTPUT_LENGTH  = 2048
 OUTPUT_DIR = "./led_reasoning_model"
 
 #  Load data

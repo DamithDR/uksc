@@ -13,7 +13,7 @@ def preprocess(example):
         example['input'],
         truncation=True,
         padding="max_length",
-        max_length=4096
+        max_length=8192
     )
 
     # Tokenize output (reasoning)
@@ -22,7 +22,7 @@ def preprocess(example):
             example['output'],
             truncation=True,
             padding="max_length",
-            max_length=512
+            max_length=2048
         )
 
     model_input["labels"] = label["input_ids"]
@@ -49,8 +49,8 @@ if __name__ == '__main__':
 
     MODEL_NAME = "google/long-t5-tglobal-base"
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    MAX_INPUT_LENGTH = 4096
-    MAX_TARGET_LENGTH = 512
+    MAX_INPUT_LENGTH = 8192
+    MAX_TARGET_LENGTH = 2048
 
     train_df = pd.read_excel('data/historic/historic_data_with_reason.xlsx', sheet_name='data')
     train_df['prompt'] = train_df.apply(
