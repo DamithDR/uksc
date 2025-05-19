@@ -72,12 +72,12 @@ if __name__ == '__main__':
     training_args = TrainingArguments(
         output_dir="./longt5-legal-finetuned",
         per_device_train_batch_size=1,
-        num_train_epochs=3,
+        num_train_epochs=10,
         logging_dir="./logs",
         logging_steps=10,
         save_total_limit=1,
         save_strategy="epoch",
-        learning_rate=5e-6,
+        learning_rate=5e-5,
         fp16=True,  # if using GPU with fp16 support
         evaluation_strategy="no"
     )
