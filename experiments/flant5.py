@@ -4,12 +4,12 @@ from transformers import pipeline
 from tqdm import tqdm
 
 # Configuration
-MODEL_NAME = "google/flan-t5-base"  # or flan-t5-xl, flan-ul2
-INPUT_COLUMN = "judgment"  # or "background"
+MODEL_NAME = "google/flan-ul2"  # or flan-t5-xl, flan-ul2
+INPUT_COLUMN = "background"  # or "background"
 EXCEL_PATH = "data/test_data_extended.xlsx"
 SHEET_NAME = "data"
 OUTPUT_PATH = "flan_t5_pipeline_batched_reasoning.xlsx"
-BATCH_SIZE = 8  # Adjust based on memory (e.g., 8–32)
+BATCH_SIZE = 4
 
 # Load test data
 df = pd.read_excel(EXCEL_PATH, sheet_name=SHEET_NAME)
@@ -22,13 +22,13 @@ prompts = [
 ]
 
 # Load pipeline with batching support
-pipe = pipeline("text2text-generation", model=MODEL_NAME, device=0)  # change device if needed
+pipe = pipeline("text2text-generation", model=MODEL_NAME, device_map='auto')  # change device if needed
 
 # Batched inference
 results = []
 for i in tqdm(range(0, len(prompts), BATCH_SIZE), desc="Running inference"):
     batch = prompts[i:i + BATCH_SIZE]
-    outputs = pipe(batch, max_length=256, truncation=True)
+    outputs = pipe(batch, max_length=512, truncation=True)
     batch_results = [o['generated_text'] for o in outputs]
     results.extend(batch_results)
 
