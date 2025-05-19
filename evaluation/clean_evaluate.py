@@ -98,12 +98,14 @@ if __name__ == '__main__':
     # eval_reasons('outputs/rag_random_chatgpt_reasons_judgment.xlsx', 'gpt-3.5-turbo-0125',
     #              'rag_random_gpt3.5_normal_judgment')
 
-    eval_classifications('outputs/rag_random_chatgpt_decisions_judgment.xlsx', 'gpt-4-turbo-2024-04-09',
-                         'rag_random_gpt4_normal_background')
-    eval_reasons('outputs/rag_random_chatgpt_reasons_background.xlsx', 'gpt-4-turbo-2024-04-09',
-                 'rag_random_gpt4_normal_background')
-
-    eval_classifications('outputs/rag_random_chatgpt_decisions_judgment.xlsx', 'gpt-4-turbo-2024-04-09',
-                         'rag_random_gpt4_normal_judgment')
-    eval_reasons('outputs/rag_random_chatgpt_reasons_judgment.xlsx', 'gpt-4-turbo-2024-04-09',
-                 'rag_random_gpt4_normal_judgment')
+    # eval_classifications('outputs/rag_random_chatgpt_decisions_judgment.xlsx', 'gpt-4-turbo-2024-04-09',
+    #                      'rag_random_gpt4_normal_background')
+    # eval_reasons('outputs/rag_random_chatgpt_reasons_background.xlsx', 'gpt-4-turbo-2024-04-09',
+    #              'rag_random_gpt4_normal_background')
+    #
+    # eval_classifications('outputs/rag_random_chatgpt_decisions_judgment.xlsx', 'gpt-4-turbo-2024-04-09',
+    #                      'rag_random_gpt4_normal_judgment')
+    # eval_reasons('outputs/rag_random_chatgpt_reasons_judgment.xlsx', 'gpt-4-turbo-2024-04-09',
+    #              'rag_random_gpt4_normal_judgment')
+    eval_reasons('outputs/flan_t5_generated_reasoning.xlsx', 'data',
+                 'flant5')

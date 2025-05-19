@@ -4,7 +4,7 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
 
 # Configuration
-MODEL_NAME = "google/flan-t5-base"  # or flan-t5-xl, flan-ul2, etc.
+MODEL_NAME = "google/flan-t5-xl"  # or flan-t5-xl, flan-ul2, etc.
 INPUT_COLUMN = "judgment"  # or "background"
 EXCEL_PATH = "data/test_data_extended.xlsx"
 SHEET_NAME = "data"
