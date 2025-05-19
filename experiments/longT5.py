@@ -50,7 +50,7 @@ if __name__ == '__main__':
     MODEL_NAME = "google/long-t5-tglobal-base"
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     MAX_INPUT_LENGTH = 4096
-    MAX_TARGET_LENGTH = 2048
+    MAX_TARGET_LENGTH = 1024
 
     train_df = pd.read_excel('data/historic/historic_data_with_reason.xlsx', sheet_name='data')
     train_df['prompt'] = train_df.apply(
