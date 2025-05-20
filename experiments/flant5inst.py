@@ -7,7 +7,7 @@ import torch
 
 # -------------------- Config --------------------
 MODEL_NAME = "google/flan-t5-base"  # or flan-t5-xl
-INPUT_COLUMN = "judgment"  # or "background"
+INPUT_COLUMN = "background"  # or "background"
 MAX_INPUT_LENGTH = 1024
 MAX_TARGET_LENGTH = 512
 BATCH_SIZE = 4
