@@ -117,7 +117,7 @@ pipe = pipeline("text2text-generation", model=model, tokenizer=tokenizer, device
 # Run batched inference
 results = []
 for prompt in prompts:
-    output = pipe(prompt, max_length=256, truncation=True)[0]["generated_text"]
+    output = pipe(prompt, max_length=512, truncation=True)[0]["generated_text"]
     results.append(output)
 
 df["generated_reasoning"] = results
