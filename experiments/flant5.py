@@ -9,7 +9,7 @@ INPUT_COLUMN = "background"  # or "background"
 EXCEL_PATH = "data/test_data_extended.xlsx"
 SHEET_NAME = "data"
 OUTPUT_PATH = "flan_t5_pipeline_batched_reasoning.xlsx"
-BATCH_SIZE = 4
+BATCH_SIZE = 2
 
 # Load test data
 df = pd.read_excel(EXCEL_PATH, sheet_name=SHEET_NAME)
