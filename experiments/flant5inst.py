@@ -121,6 +121,6 @@ for prompt in prompts:
     results.append(output)
 
 df["generated_reasoning"] = results
-df.to_excel(OUTPUT_PATH, index=False)
+df.to_excel(OUTPUT_PATH,sheet_name='data', index=False)
 print(f"Inference complete. Results saved to: {OUTPUT_PATH}")
 
