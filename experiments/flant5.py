@@ -4,12 +4,12 @@ from transformers import pipeline
 from tqdm import tqdm
 
 # Configuration
-MODEL_NAME = "google/flan-ul2"  # or flan-t5-xl, flan-ul2
+MODEL_NAME = "google/flan-t5-xl"  # or flan-t5-xl, flan-ul2
 INPUT_COLUMN = "background"  # or "background"
 EXCEL_PATH = "data/test_data_extended.xlsx"
 SHEET_NAME = "data"
 OUTPUT_PATH = "flan_t5_pipeline_batched_reasoning.xlsx"
-BATCH_SIZE = 2
+BATCH_SIZE = 4
 
 # Load test data
 df = pd.read_excel(EXCEL_PATH, sheet_name=SHEET_NAME)
