@@ -107,5 +107,5 @@ if __name__ == '__main__':
     #                      'rag_random_gpt4_normal_judgment')
     # eval_reasons('outputs/rag_random_chatgpt_reasons_judgment.xlsx', 'gpt-4-turbo-2024-04-09',
     #              'rag_random_gpt4_normal_judgment')
-    eval_reasons('outputs/flan_t5_generated_reasoning.xlsx', 'data',
-                 'flant5')
+    eval_reasons('outputs/lora_flan_t5_inference.xlsx', 'data',
+                 'loraflant5')
