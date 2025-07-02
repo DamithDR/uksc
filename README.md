@@ -1,4 +1,4 @@
-# Doing Legal Judgment Prediction in the Right Way with Large Language Models
+# UKSC-JP: A Legal Judgement Prediction Benchmark for the United Kingdom Supreme Court
 
 ## Installation
 
