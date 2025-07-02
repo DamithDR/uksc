@@ -20,7 +20,7 @@ pip install -r requirements.txt
 You can easily run open-source llm experiments using following command and altering the parameters as you wish.
 
 ```bash
-python -m experiments.open_llms --model_name meta-llama/Llama-2-7b-chat-hf --visible_cuda_devices 0,1,2 --run_mode tag
+python -m experiments.open_llms --model_name meta-llama/Llama-2-7b-chat-hf --visible_cuda_devices 0,1,2
 ```
 
 In order to use the meta-llama/Meta-Llama-3.1-8B-Instruct model, you have to add the padding token to tokeniser and
@@ -36,7 +36,7 @@ After this action, you can simply use the following script to execute experiment
 meta-llama/Meta-Llama-3.1-8B-Instruct model.
 
 ```bash
-python -m experiments.llama3 --model_name meta-llama/Meta-Llama-3.1-8B-Instruct --visible_cuda_devices 0,1,2 --run_mode tag
+python -m experiments.llama3 --model_name meta-llama/Meta-Llama-3.1-8B-Instruct --visible_cuda_devices 0,1,2
 ```
 
 In order to execute GPT based experiments first you need to setup environment variable OPENAI_API_KEY with your openai
@@ -53,7 +53,6 @@ Please find the detailed descriptions of the parameters
 ```texts
 model_name              : Huggingface transformer model name that you need to experiment with; ex: google-bert/bert-base-multilingual-cased
 visible_cuda_devices    : Comma separated device numbers to run the experiment on
-run_mode                : Either default or tag, the type of experiments you want to run. tag; with legal area, default; without legal area
 ```
 
 After the execution, the files will be saved on /outputs path. Use these files to manually post edit in classification
